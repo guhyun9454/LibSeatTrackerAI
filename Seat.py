@@ -42,17 +42,16 @@ class Seat:
             self.waited_time += 1
             if self.waited_time > TimeLimit.TEMPORARILY_EMPTY:
                 self.waited_time = 0
-                # 관리자 연락
-                # 이용자 경고, 벌점
+                self.report_to_admin() # 관리자 연락
+                self.penalize_user() # 이용자 경고, 벌점
                 self.status = Status.CHECKING_OUT
                 return
         elif self.status == Status.CHECKING_OUT:
             self.waited_time += 1
             if self.waited_time > TimeLimit.CHECKING_OUT:
                 self.waited_time = 0
-                # 퇴실 처리
+                self.check_out() # 퇴실 처리
                 self.status = Status.AVAILABLE
-                self.user_id = -1
                 return
 
         if self.is_person:  # 사람이 있는가?
@@ -60,7 +59,7 @@ class Seat:
                 self.status = Status.IN_USE
                 return
             else:
-                # 관리자 연락
+                self.report_to_admin() # 관리자 연락
                 self.status = Status.UNAUTHORIZED_USE
                 return
         else:
@@ -68,37 +67,47 @@ class Seat:
                 self.waited_time += 1
                 if self.waited_time > TimeLimit.RESERVED_WAITING_ENTRY:
                     self.waited_time = 0
-                    # 퇴실 처리
+                    self.check_out() # 퇴실 처리
                     self.status = Status.AVAILABLE
-                    self.user_id = -1
                     return
                 else:
                     self.status = Status.RESERVED_WAITING_ENTRY
                     return
-            elif self.status == Status.IN_USE or self.status == Status.TEMPORARILY_EMPTY:
-                if self.is_luggage:  # 짐이 있는가?
+            elif self.status in (Status.IN_USE, Status.TEMPORARILY_EMPTY):
+                if self.is_luggage: # 짐이 있는가?
                     self.status = Status.TEMPORARILY_EMPTY
                     return
                 else:
-                    # 퇴실 처리
+                    self.check_out() # 퇴실 처리
                     self.status = Status.AVAILABLE
-                    self.user_id = -1
                     return
             elif self.status == Status.CHECKING_OUT:
-                if self.is_luggage:  # 짐이 있는가?
+                if self.is_luggage: # 짐이 있는가?
                     self.status = Status.CHECKING_OUT
                     return
                 else:
-                    # 퇴실 처리
+                    self.check_out() # 퇴실 처리
                     self.status = Status.AVAILABLE
-                    self.user_id = -1
                     return
-            elif self.is_luggage:  # 짐이 있는가?
-                # 관리자 연락
+            elif self.is_luggage: # 짐이 있는가?
+                self.report_to_admin() # 관리자 연락
                 self.status = Status.UNAUTHORIZED_USE
                 return
             else:
-                # 퇴실 처리
+                self.check_out() # 퇴실 처리
                 self.status = Status.AVAILABLE
-                self.user_id = -1
                 return
+
+    def check_in(self): # 입실 처리 과정
+        self.status = Status.RESERVED_WAITING_ENTRY
+
+    def check_out(self): # 퇴실 처리 과정
+        self.user_id = -1
+        # 관리자 페이지에 update
+
+    def report_to_admin(self): # 관리자 연락 처리 과정
+        # 관리자 페이지에 update
+        return
+
+    def penalize_user(self): # 이용자 경고, 벌점 처리 과정
+        return
