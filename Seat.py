@@ -1,4 +1,5 @@
 from enums import Status, TimeLimit
+import utils
 
 
 class Seat:
@@ -33,6 +34,8 @@ class Seat:
         self.is_person = False
         self.is_luggage = False
         self.waited_time = 0
+
+        self.db_init()
 
     def status_update(self):
         """
@@ -98,8 +101,9 @@ class Seat:
                 self.status = Status.AVAILABLE
                 return
 
-    def check_in(self): # 입실 처리 과정
+    def check_in(self, user_id : int): # 입실 처리 과정
         self.status = Status.RESERVED_WAITING_ENTRY
+        self.user_id = user_id
 
     def check_out(self): # 퇴실 처리 과정
         self.user_id = -1
@@ -111,3 +115,13 @@ class Seat:
 
     def penalize_user(self): # 이용자 경고, 벌점 처리 과정
         return
+
+    def db_init(self):
+        utils.create_seat(
+            utils.schema.SeatWithUserID(seat_number=self.seat_number, seat_status=self.status, user_id=self.user_id)
+        )
+
+    def db_write(self):
+        utils.update_seat(
+            utils.schema.SeatWithUserID(seat_number=self.seat_number, seat_status=self.status, user_id=self.user_id)
+        )
