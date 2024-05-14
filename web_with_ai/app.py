@@ -31,8 +31,8 @@ model = load_model("webcam_demo/yolov8s.pt") #ai 모델
 cap = load_VideoCapture(0) #웹캠
 
 #구역 설정
-area1 = init_DetectArea((100, 100), (200, 100), (200, 200), (100, 200))
-area2 = init_DetectArea((200, 200), (300, 200), (300, 300), (200, 300))
+area1 = init_DetectArea((80, 150), (280, 150), (280, 330), (80, 330))
+area2 = init_DetectArea((360, 150), (560, 150), (560, 330), (360, 330))
 
 
 try:
