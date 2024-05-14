@@ -4,7 +4,7 @@ import math
 
 cap = cv2.VideoCapture(0)
 
-model = YOLO("yolo-Weights/yolov8n.pt")
+model = YOLO("webcam_demo/yolov8n.pt")
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
               "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
               "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
@@ -20,6 +20,8 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
 
 while True:
     success, img = cap.read()
+    if not success:
+        break
     results = model(img, stream=True,classes = [0,39,41,62,63,64,66,67,73]) #person, bottle, cup, tvmonitor, laptop, mouse, keyboard, cell phone, book 만 탐지
 
     # coordinates
