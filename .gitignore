@@ -1,1 +1,26 @@
 backend_fastapi/config/secrets.json
+# Python 관련 파일 무시
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+
+# 환경 설정 파일 무시
+.env
+.venv
+env/
+venv/
+ENV/
+
+# 운영체제 별 파일 무시
+.DS_Store
+Thumbs.db
+
+# IDE/편집기 설정 파일 무시
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
