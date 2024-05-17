@@ -1,5 +1,39 @@
-from enums import Status, TimeLimit
+from .SeatStatus import Status, TimeLimit
+import numpy as np
+import cv2
+from .Colors import get_color
 
+class DetectArea:
+    def __init__(self,coordinates):
+        """
+        자리의 카메라상의 구역을 나타내는 객체
+
+        p1, p2, p3, p4 (tuple):
+        4개의 좌표쌍 (x: int, y: int) 
+        좌측 상단(p1), 우측 상단(p2), 우측 하단(p3), 좌측 하단(p4)
+        왼쪽 모서리가 (0,0)
+        
+        """
+        self.polygon = np.array(coordinates, np.int32).reshape((-1, 1, 2))
+    
+    def draw(self, img, color_name, alpha = 0.5):
+        """
+        원본 이미지에 구역을 그림
+
+        img (np.ndarray):
+        구역을 그릴 원본 이미지
+
+        color_name (str):
+        구역을 칠할 색상
+
+        aplha (int): 
+        투명도
+        """
+        overlay = img.copy()
+        color = get_color(color_name)
+
+        cv2.fillPoly(overlay, [self.polygon], color)
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
 class Seat:
     def __init__(self, seat_number: int, coordinates: tuple, status=Status.AVAILABLE, user_id=-1):
@@ -8,8 +42,7 @@ class Seat:
         고유한 자리 식별 번호 
 
         coordinates (tuple): 
-        카메라 상에서 보이는 정규화된 좌표 (x1, y1, x2, y2, x3, y3, x4, y4) 
-        0과 1 사이의 정규화된 값을 가져야함.
+        ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) 
         Top left: (x1,y1) / Top right: (x2,y2) / Bottom right: (x3,y3) / Bottom left: (x4,y4)
 
         status_id (Status):
@@ -25,8 +58,8 @@ class Seat:
         만약 자리를 사용하고 있다면, 사용중인 사람의 user id
         사용중이지 않다면, -1
         """
+        self.DetectArea = DetectArea(coordinates)
         self.seat_number = seat_number
-        self.coordinates = coordinates
         self.status = status
         self.user_id = user_id
 

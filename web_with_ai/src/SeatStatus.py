@@ -9,6 +9,14 @@ class Status(IntEnum):
     CHECKING_OUT = 4  # 퇴실 예정
     TEMPORARILY_EMPTY = 5  # 자리 비움
 
+state_colors = {
+    Status.AVAILABLE: "green",
+    Status.IN_USE: "blue",
+    Status.UNAUTHORIZED_USE: "red",
+    Status.RESERVED_WAITING_ENTRY: "yellow",
+    Status.CHECKING_OUT: "orange",
+    Status.TEMPORARILY_EMPTY: "purple"
+}
 
 class TimeLimit(IntEnum):
     RESERVED_WAITING_ENTRY = 5  # k분 제한

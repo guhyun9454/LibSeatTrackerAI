@@ -5,9 +5,9 @@ import numpy as np
 import math
 import os
 
-from src.DetectArea import DetectArea
 from src.SeatDiagram import SeatDiagram
 from src.SeatStatus import Status
+from src.Seat import Seat
 
 device = "mps" if os.uname().sysname == 'Darwin' else None
 model_path = "yolo_weights/yolov8s.pt"
@@ -23,8 +23,8 @@ def load_VideoCapture(type):
     return cv2.VideoCapture(0)
 
 @st.cache_resource
-def init_DetectArea(p1,p2,p3,p4):
-    return DetectArea(p1,p2,p3,p4)
+def init_Seat(seat_num,coordinates):
+    return Seat(seat_num,coordinates)
 
 # Streamlit app setup
 st.title("REDDOT Demo")
@@ -34,9 +34,9 @@ conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6)
 model = load_model(model_path) #ai 모델
 cap = load_VideoCapture(1) #웹캠
 
-#구역 설정
-area1 = init_DetectArea((80, 150), (280, 150), (280, 330), (80, 330))
-area2 = init_DetectArea((360, 150), (560, 150), (560, 330), (360, 330))
+#자리 설정
+Seat1 = init_Seat(seat_num=1,coordinates=((80, 150), (280, 150), (280, 330), (80, 330)))
+Seat2 = init_Seat(seat_num=2,coordinates=((360, 150), (560, 150), (560, 330), (360, 330)))
 
 col1,col2 = st.columns(2)
 
@@ -61,15 +61,13 @@ try:
             res = res[0].plot()
 
             #구역들을 그림
-            area1.draw(res, color_name = "dark_red", alpha = 0.5)
-            area2.draw(res, color_name = "dark_blue", alpha = 0.35)
+            Seat1.DetectArea.draw(res, color_name = "dark_red", alpha = 0.5)
+            Seat2.DetectArea.draw(res, color_name = "dark_blue", alpha = 0.35)
             
             diagram = SeatDiagram(imgsz=(640,480), background_color="white")
-            diagram.add_seat((80, 150), (280, 150), (280, 330), (80, 330), state=Status.AVAILABLE)
-            diagram.add_seat((360, 150), (560, 150), (560, 330), (360, 330), state=Status.IN_USE)
+            diagram.add_seat(Seat1)
+            diagram.add_seat(Seat2)
             diagram.draw_seats()
-            diagram.add_label("Seat 1", position=(75, 45), font_scale=0.6, color_name="black", thickness=1)
-            diagram.add_label("Seat 2", position=(275, 45), font_scale=0.6, color_name="black", thickness=1)
 
 
             #streamlit에 업데이트
