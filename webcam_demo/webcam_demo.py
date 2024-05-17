@@ -4,7 +4,7 @@ import math
 
 cap = cv2.VideoCapture(0)
 
-model = YOLO("webcam_demo/yolov8n.pt")
+model = YOLO("yolo_weights/yolov8n.pt")
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
               "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
               "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
