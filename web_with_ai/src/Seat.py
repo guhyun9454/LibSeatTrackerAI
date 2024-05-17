@@ -5,15 +5,6 @@ from .Colors import get_color
 
 class DetectArea:
     def __init__(self,coordinates):
-        """
-        자리의 카메라상의 구역을 나타내는 객체
-
-        p1, p2, p3, p4 (tuple):
-        4개의 좌표쌍 (x: int, y: int) 
-        좌측 상단(p1), 우측 상단(p2), 우측 하단(p3), 좌측 하단(p4)
-        왼쪽 모서리가 (0,0)
-        
-        """
         self.polygon = np.array(coordinates, np.int32).reshape((-1, 1, 2))
     
     def draw(self, img, color_name, alpha = 0.5):
@@ -38,6 +29,9 @@ class DetectArea:
 class Seat:
     def __init__(self, seat_number: int, coordinates: tuple, status=Status.AVAILABLE, user_id=-1):
         """
+        DetectArea (DetectArea객체):
+        자리의 카메라상의 구역을 나타내는 객체
+
         seat_number (int): 
         고유한 자리 식별 번호 
 
@@ -46,13 +40,7 @@ class Seat:
         Top left: (x1,y1) / Top right: (x2,y2) / Bottom right: (x3,y3) / Bottom left: (x4,y4)
 
         status_id (Status):
-        현재 자리의 상태를 나타냅니다.
-        AVAILABLE : 예약 가능
-        IN_USE : 사용 중
-        UNAUTHORIZED_USE : 무단 이용 중
-        RESERVED_WAITING_ENTRY : 예약 됨, 입실 대기
-        CHECKING_OUT : 퇴실 예정
-        TEMPORARILY_EMPTY : 자리 비움
+        현재 자리의 상태를 나타냅니다. SeatStatus.py 참조
                     
         user_id (int): 
         만약 자리를 사용하고 있다면, 사용중인 사람의 user id
