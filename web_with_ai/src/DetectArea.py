@@ -14,7 +14,6 @@ class DetectArea:
         
         """
         self.polygon = np.array([p1, p2, p3, p4], np.int32).reshape((-1, 1, 2))
-        print(self.polygon)
     
     def draw(self, img, color_name, alpha = 0.5):
         """
