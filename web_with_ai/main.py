@@ -8,6 +8,7 @@ import platform
 from src.SeatsManager import SeatsManager
 from src.SeatStatus import Status
 from src.Seat import Seat
+from utils.IoU import calculate_iou
 
 device = "mps" if platform.system() == 'Darwin' else None
 model_path = "yolo_weights/yolov8s.pt"
@@ -27,9 +28,12 @@ def load_VideoCapture(type):
 def init_Seat(seat_number, coordinates, status=Status.AVAILABLE, user_id=-1):
     return Seat(seat_number,coordinates, status, user_id)
 
-# Streamlit app setup
+# 관리자 페이지 화면 설정
 st.title("REDDOT Demo")
-conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6)
+conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6) 
+st.sidebar.write("탐지 확률이 얼마나 높아야 객체로 판별할지 설정합니다.")
+iou_threshold = st.sidebar.slider("IOU Threshold", 0.0, 1.0, 0.5) 
+st.sidebar.write("얼마나 많이 겹쳐야 그 자리에 있다고 판별할지 설정합니다.")
 col1,col2 = st.columns(2)
 with col1:
     st_frame_col1 = st.empty()
@@ -65,7 +69,16 @@ try:
                                 device = device, imgsz = image_size[::-1]) 
 
             #모델 결과를 통해 각 자리에 짐과 사람의 여부를 업데이트
-            
+            for seat in seat_manager.seats:
+                seat.is_person = False
+                seat.is_luggage = False
+                for result in model_result[0].boxes:
+                    cls = int(result.cls[0])
+                    iou = calculate_iou(seat.DetectArea.polygon.reshape(-1)[[0, 1, 4, 5]], result.xyxy[0])
+                    if cls == 0 and iou > iou_threshold:  # 사람
+                        seat.is_person = True
+                    elif cls != 0 and iou > iou_threshold:  # 짐
+                        seat.is_luggage = True
 
 
             # <왼쪽>

@@ -32,7 +32,7 @@ class SeatsManager:
             color = get_color(color_name)
             cv2.fillPoly(self.image, [seat.DetectArea.polygon], color)
             
-            #  사각형의 중심을 계산
+            # 사각형의 중심을 계산
             moments = cv2.moments(seat.DetectArea.polygon)
             if moments['m00'] != 0:
                 cx = int(moments['m10'] / moments['m00'])
@@ -40,11 +40,16 @@ class SeatsManager:
             else:
                 cx, cy = 0, 0
 
-            # seat number and status text를 적음
+            # seat number와 상태, 사람 유무 및 짐 유무를 표시
             seat_text = f"Seat {seat.seat_number}"
-            status_text = seat.status.name
-            cv2.putText(self.image, seat_text, (cx - 50, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
-            cv2.putText(self.image, status_text, (cx - 50, cy + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
+            status_text = f"Status: {seat.status.name}"
+            person_text = "Person: Yes" if seat.is_person else "Person: No"
+            luggage_text = "Luggage: Yes" if seat.is_luggage else "Luggage: No"
+            
+            cv2.putText(self.image, seat_text, (cx - 50, cy - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
+            cv2.putText(self.image, status_text, (cx - 50, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
+            cv2.putText(self.image, person_text, (cx - 50, cy + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
+            cv2.putText(self.image, luggage_text, (cx - 50, cy + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, get_color("black"), 2)
     
     def get_color_by_state(self, state):
         return state_colors.get(state, "black")
