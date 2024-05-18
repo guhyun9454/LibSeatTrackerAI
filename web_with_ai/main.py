@@ -32,7 +32,7 @@ def init_Seat(seat_number, coordinates, status=Status.AVAILABLE, user_id=-1):
 st.title("REDDOT Demo")
 conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6) 
 st.sidebar.write("탐지 확률이 얼마나 높아야 객체로 판별할지 설정합니다.")
-iou_threshold = st.sidebar.slider("IOU Threshold", 0.0, 1.0, 0.5) 
+iou_threshold = st.sidebar.slider("IOU Threshold", 0.0, 1.0, 0.2) 
 st.sidebar.write("얼마나 많이 겹쳐야 그 자리에 있다고 판별할지 설정합니다.")
 col1,col2 = st.columns(2)
 with col1:
@@ -104,11 +104,11 @@ try:
             #왼쪽:
             with col1:
                 st_frame_col1.image(res, caption='Detected Video', 
-                                    channels="BGR")
+                                    channels="BGR",use_column_width = True)
             #오른쪽:
             with col2:
                 st_frame_col2.image(seat_manager.image, caption='Seat Diagram', 
-                                    channels="BGR")
+                                    channels="BGR",use_column_width = True)
 
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))  
