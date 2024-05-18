@@ -3,13 +3,13 @@ from ultralytics import YOLO
 import cv2
 import numpy as np
 import math
-import os
+import platform
 
 from src.SeatsManager import SeatsManager
 from src.SeatStatus import Status
 from src.Seat import Seat
 
-device = "mps" if os.uname().sysname == 'Darwin' else None
+device = "mps" if platform.system() == 'Darwin' else None
 model_path = "yolo_weights/yolov8s.pt"
 image_size = (640, 480)
 
@@ -20,6 +20,7 @@ def load_model(model_path):
 
 @st.cache_resource
 def load_VideoCapture(type):
+    print("loading webcam")
     return cv2.VideoCapture(0)
 
 @st.cache_resource
@@ -29,6 +30,12 @@ def init_Seat(seat_number, coordinates, status=Status.AVAILABLE, user_id=-1):
 # Streamlit app setup
 st.title("REDDOT Demo")
 conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6)
+col1,col2 = st.columns(2)
+with col1:
+    st_frame_col1 = st.empty()
+with col2:
+    st_frame_col2 = st.empty()
+
 
 #cache를 통해 새로고침해도 계속 사용
 model = load_model(model_path) #ai 모델
@@ -39,18 +46,12 @@ Seat1 = init_Seat(seat_number=1,coordinates=((80, 150), (280, 150), (280, 330), 
 Seat2 = init_Seat(seat_number=2,coordinates=((360, 150), (560, 150), (560, 330), (360, 330)))
 
 #자리 관리 객체 생성
-Seats = SeatsManager(image_size)
-Seats.add_seat(Seat1)
-Seats.add_seat(Seat2)
+seat_manager = SeatsManager(image_size)
+seat_manager.add_seat(Seat1)
+seat_manager.add_seat(Seat2)
 
-col1,col2 = st.columns(2)
 
 try:
-    with col1:
-        st_frame_col1 = st.empty()
-    with col2:
-        st_frame_col2 = st.empty()
-    
     while (cap.isOpened()):
         #웹캠으로부터 한 프레임씩 불러와 처리
         success, image = cap.read()
@@ -83,7 +84,7 @@ try:
             # Colors에 지정한 상태별 색상에 따라 도식화한 사진을 저장함.
 
             # SeatManager을 통해 자리 상태를 도식화한 사진에 업데이트함
-            Seats.draw_seats()
+            seat_manager.draw_seats()
 
 
             #streamlit 화면에 업데이트
@@ -93,7 +94,7 @@ try:
                                     channels="BGR")
             #오른쪽:
             with col2:
-                st_frame_col2.image(Seats.image, caption='Seat Diagram', 
+                st_frame_col2.image(seat_manager.image, caption='Seat Diagram', 
                                     channels="BGR")
 
 except Exception as e:
