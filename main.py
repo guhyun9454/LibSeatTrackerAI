@@ -1,14 +1,22 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.responses import RedirectResponse
-import asyncio
-import uvicorn
+from fastapi.security import APIKeyHeader
+from pydantic import BaseModel
+from typing import List
 
-from Seat import Seat
+from web_with_ai.src.SeatStatus import Status as SeatStatus
 
-number_of_seats = 10
-seats = []
+API_TOKEN = "SECRET_API_TOKEN"
 
 app = FastAPI()
+api_key_header = APIKeyHeader(name="Token")
+
+class Seat(BaseModel):
+    seat_number: int
+    status: SeatStatus
+    user_id: int
+
+seats: List[Seat] = []
 
 @app.get("/")
 async def root():
@@ -19,36 +27,26 @@ async def get_seats():
     return [seat.status for seat in seats]
 
 @app.put("/seats/")
-async def reserve_seats(seat_number: int, user_id: int):
-    seat = seats[seat_number]
-    if seat.check_in(user_id):
+async def reserve_seat(seat_number: int, user_id: int):
+    if seat_number < 0 or seat_number >= len(seats):
+        raise HTTPException(status_code=404, detail="Seat number isn't available")
+    if seats[seat_number].status == SeatStatus.AVAILABLE:
+        seats[seat_number].user_id = user_id
+        seats[seat_number].status = SeatStatus.RESERVED_WAITING_ENTRY
         return {"message": "Seat reserved successfully"}
     else:
         raise HTTPException(status_code=404, detail="Seat isn't available")
 
-def initialize_seats():
-    for i in range(number_of_seats):
-        _seat = Seat(seat_number=i, coordinates=()) # 초기 설정
-        seats.append(_seat)
+async def api_token(token: str = Depends(APIKeyHeader(name="Token"))):
+    if token != API_TOKEN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-async def seat_loop_task(): # status 및 사람과 짐 유무 업데이트
-    while True:
-        for seat in seats:
-            seat.status_update()
-        await asyncio.sleep(60) # 60초마다 반복
+@app.post("/seats/admin", dependencies=[Depends(api_token)])
+async def init_seat(seat_number: int):
+    seats.append(Seat(seat_number=seat_number, status=SeatStatus.AVAILABLE, user_id=-1))
 
-def start_uvicorn(loop):
-    config = uvicorn.Config(app, loop=loop, host="localhost", port=8000)
-    server = uvicorn.Server(config)
-    loop.run_until_complete(server.serve())
-
-def start_seat_app(loop):
-    loop.create_task(seat_loop_task())
-
-if __name__ == "__main__":
-    initialize_seats()
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    start_seat_app(loop)
-    start_uvicorn(loop)
+@app.put("/seats/admin", dependencies=[Depends(api_token)])
+async def update_seat(seat_number: int, seat_status: int):
+    if seat_number < 0 or seat_number >= len(seats):
+        raise HTTPException(status_code=404, detail="Seat number isn't available")
+    seats[seat_number].status = seat_status
