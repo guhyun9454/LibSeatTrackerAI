@@ -38,7 +38,7 @@ try:
         success, image = cap.read()
         if success:
             resized_image = cv2.resize(image, (640, 480))
-            
+
             processed_image = send_image_to_server(resized_image)
             seat_diagram = get_seat_diagram()
 
@@ -49,9 +49,9 @@ try:
             seat_diagram = cv2.imdecode(seat_diagram, cv2.IMREAD_COLOR)
 
             with col1:
-                st_frame_col1.image(processed_image, caption='Captured Video', channels="BGR", use_column_width=True)
+                st_frame_col1.image(processed_image, caption='CCTV', channels="BGR", use_column_width=True)
             with col2:
-                st_frame_col2.image(seat_diagram, caption='Processed Video', channels="BGR", use_column_width=True)
+                st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
 
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))
