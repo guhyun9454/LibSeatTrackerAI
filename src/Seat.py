@@ -1,4 +1,4 @@
-from .SeatStatus import Status, TimeLimit
+from .SeatStatus import SeatStatus, TimeLimit
 import numpy as np
 import cv2
 from .Colors import get_color
@@ -27,7 +27,7 @@ class DetectArea:
         cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
 class Seat:
-    def __init__(self, seat_number: int, coordinates: tuple, status=Status.AVAILABLE, user_id=-1):
+    def __init__(self, seat_number: int, coordinates: tuple, status=SeatStatus.AVAILABLE, user_id=-1):
         """
         DetectArea (DetectArea객체):
         자리의 카메라상의 구역을 나타내는 객체
@@ -59,69 +59,69 @@ class Seat:
         """
         분당 반복되야하는 함수. status를 업데이트 한다.
         """
-        if self.status == Status.TEMPORARILY_EMPTY:
+        if self.status == SeatStatus.TEMPORARILY_EMPTY:
             self.waited_time += 1
             if self.waited_time > TimeLimit.TEMPORARILY_EMPTY:
                 self.waited_time = 0
                 self.report_to_admin() # 관리자 연락
                 self.penalize_user() # 이용자 경고, 벌점
-                self.status = Status.CHECKING_OUT
+                self.status = SeatStatus.CHECKING_OUT
                 return
-        elif self.status == Status.CHECKING_OUT:
+        elif self.status == SeatStatus.CHECKING_OUT:
             self.waited_time += 1
             if self.waited_time > TimeLimit.CHECKING_OUT:
                 self.waited_time = 0
                 self.check_out() # 퇴실 처리
-                self.status = Status.AVAILABLE
+                self.status = SeatStatus.AVAILABLE
                 return
 
         if self.is_person:  # 사람이 있는가?
-            if self.status in (Status.RESERVED_WAITING_ENTRY, Status.IN_USE, Status.CHECKING_OUT):
-                self.status = Status.IN_USE
+            if self.status in (SeatStatus.RESERVED_WAITING_ENTRY, SeatStatus.IN_USE, SeatStatus.CHECKING_OUT):
+                self.status = SeatStatus.IN_USE
                 return
             else:
                 self.report_to_admin() # 관리자 연락
-                self.status = Status.UNAUTHORIZED_USE
+                self.status = SeatStatus.UNAUTHORIZED_USE
                 return
         else:
-            if self.status == Status.RESERVED_WAITING_ENTRY:
+            if self.status == SeatStatus.RESERVED_WAITING_ENTRY:
                 self.waited_time += 1
                 if self.waited_time > TimeLimit.RESERVED_WAITING_ENTRY:
                     self.waited_time = 0
                     self.check_out() # 퇴실 처리
-                    self.status = Status.AVAILABLE
+                    self.status = SeatStatus.AVAILABLE
                     return
                 else:
-                    self.status = Status.RESERVED_WAITING_ENTRY
+                    self.status = SeatStatus.RESERVED_WAITING_ENTRY
                     return
-            elif self.status in (Status.IN_USE, Status.TEMPORARILY_EMPTY):
+            elif self.status in (SeatStatus.IN_USE, SeatStatus.TEMPORARILY_EMPTY):
                 if self.is_luggage: # 짐이 있는가?
-                    self.status = Status.TEMPORARILY_EMPTY
+                    self.status = SeatStatus.TEMPORARILY_EMPTY
                     return
                 else:
                     self.check_out() # 퇴실 처리
-                    self.status = Status.AVAILABLE
+                    self.status = SeatStatus.AVAILABLE
                     return
-            elif self.status == Status.CHECKING_OUT:
+            elif self.status == SeatStatus.CHECKING_OUT:
                 if self.is_luggage: # 짐이 있는가?
-                    self.status = Status.CHECKING_OUT
+                    self.status = SeatStatus.CHECKING_OUT
                     return
                 else:
                     self.check_out() # 퇴실 처리
-                    self.status = Status.AVAILABLE
+                    self.status = SeatStatus.AVAILABLE
                     return
             elif self.is_luggage: # 짐이 있는가?
                 self.report_to_admin() # 관리자 연락
-                self.status = Status.UNAUTHORIZED_USE
+                self.status = SeatStatus.UNAUTHORIZED_USE
                 return
             else:
                 self.check_out() # 퇴실 처리
-                self.status = Status.AVAILABLE
+                self.status = SeatStatus.AVAILABLE
                 return
 
     def check_in(self, user_id : int): # 입실 처리 과정
-        if self.status == Status.AVAILABLE:
-            self.status = Status.RESERVED_WAITING_ENTRY
+        if self.status == SeatStatus.AVAILABLE:
+            self.status = SeatStatus.RESERVED_WAITING_ENTRY
             self.user_id = user_id
             return True
         return False
