@@ -6,10 +6,7 @@ from typing import List
 
 from src.SeatStatus import Status as SeatStatus
 
-API_TOKEN = "SECRET_API_TOKEN"
-
 app = FastAPI()
-api_key_header = APIKeyHeader(name="Token")
 
 class Seat(BaseModel):
     seat_number: int
@@ -44,25 +41,21 @@ async def reserve_seat(seat_number: int, user_id: int):
     else:
         raise HTTPException(status_code=404, detail="Seat isn't available")
 
-async def api_token(token: str = Depends(APIKeyHeader(name="Token"))):
-    if token != API_TOKEN:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-@app.get("/seats/admin", dependencies=[Depends(api_token)])
+@app.get("/seats/admin")
 async def get_seats_with_id():
     return [[seat.status, seat.user_id] for seat in seats]
 
-@app.post("/seats/admin", dependencies=[Depends(api_token)])
+@app.post("/seats/admin")
 async def init_seat(seat_number: int):
     seats.append(Seat(seat_number=seat_number, status=SeatStatus.AVAILABLE, user_id=-1))
 
-@app.put("/seats/admin", dependencies=[Depends(api_token)])
+@app.put("/seats/admin")
 async def update_seat(seat_number: int, seat_status: int, user_id: int):
     if seat_number < 0 or seat_number >= len(seats):
         raise HTTPException(status_code=404, detail="Seat number isn't available")
     seats[seat_number].status = seat_status
     seats[seat_number].user_id = user_id
 
-@app.delete("/seats/admin", dependencies=[Depends(api_token)])
+@app.delete("/seats/admin")
 async def delete_all_seat():
     seats.clear()

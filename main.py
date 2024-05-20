@@ -11,8 +11,6 @@ from src.IoU import calculate_iou
 import requests
 import time
 
-API_TOKEN = "SECRET_API_TOKEN"
-headers = {"Token": API_TOKEN}
 
 device = "mps" if platform.system() == 'Darwin' else None
 model_path = "yolo_weights/yolov8s.pt"
@@ -30,8 +28,7 @@ def load_VideoCapture(type):
 
 @st.cache_resource
 def init_Seat(seat_number, coordinates, status=Status.AVAILABLE, user_id=-1):
-    requests.post(f"http://127.0.0.1:8000/seats/admin?seat_number={seat_number}",
-                  headers=headers)
+    requests.post(f"http://127.0.0.1:8000/seats/admin?seat_number={seat_number}")
     return Seat(seat_number,coordinates, status, user_id)
 
 # 관리자 페이지 화면 설정
@@ -52,7 +49,7 @@ model = load_model(model_path) #ai 모델
 cap = load_VideoCapture(0) #웹캠
 
 #자리 설정
-requests.delete("http://127.0.0.1:8000/seats/admin", headers=headers)
+requests.delete("http://127.0.0.1:8000/seats/admin")
 Seat1 = init_Seat(seat_number=0,coordinates=((80, 150), (280, 150), (280, 330), (80, 330)))
 Seat2 = init_Seat(seat_number=1,coordinates=((360, 150), (560, 150), (560, 330), (360, 330)))
 
@@ -79,7 +76,7 @@ try:
                                 device = device, imgsz = image_size[::-1]) 
 
             #모델 결과를 통해 각 자리에 짐과 사람의 여부를 업데이트
-            data:list = requests.get("http://127.0.0.1:8000/seats/admin", headers=headers).json()
+            data:list = requests.get("http://127.0.0.1:8000/seats/admin").json()
             for seat in seat_manager.seats:
                 seat.is_person = False
                 seat.is_luggage = False
@@ -94,8 +91,7 @@ try:
                 seat.status = data[seat.seat_number][0]
                 seat.user_id = data[seat.seat_number][1]
                 seat.status_update()
-                requests.put(f"http://127.0.0.1:8000/seats/admin?seat_number={seat.seat_number}&seat_status={seat.status}&user_id={seat.user_id}",
-                             headers=headers)
+                requests.put(f"http://127.0.0.1:8000/seats/admin?seat_number={seat.seat_number}&seat_status={seat.status}&user_id={seat.user_id}")
 
 
             # <왼쪽>
