@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 
-class Status(IntEnum):
+class SeatStatus(IntEnum):
     AVAILABLE = 0  # 예약 가능
     IN_USE = 1  # 사용 중
     UNAUTHORIZED_USE = 2  # 무단 이용 중
@@ -10,12 +10,12 @@ class Status(IntEnum):
     TEMPORARILY_EMPTY = 5  # 자리 비움
 
 state_colors = {
-    Status.AVAILABLE: "green",
-    Status.IN_USE: "blue",
-    Status.UNAUTHORIZED_USE: "red",
-    Status.RESERVED_WAITING_ENTRY: "yellow",
-    Status.CHECKING_OUT: "orange",
-    Status.TEMPORARILY_EMPTY: "purple"
+    SeatStatus.AVAILABLE: "green",
+    SeatStatus.IN_USE: "blue",
+    SeatStatus.UNAUTHORIZED_USE: "red",
+    SeatStatus.RESERVED_WAITING_ENTRY: "yellow",
+    SeatStatus.CHECKING_OUT: "orange",
+    SeatStatus.TEMPORARILY_EMPTY: "purple"
 }
 
 class TimeLimit(IntEnum):
