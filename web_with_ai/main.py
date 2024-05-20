@@ -54,6 +54,7 @@ model = load_model(model_path) #ai 모델
 cap = load_VideoCapture(0) #웹캠
 
 #자리 설정
+requests.delete("http://127.0.0.1:8000/seats/admin", headers=headers)
 Seat1 = init_Seat(seat_number=0,coordinates=((80, 150), (280, 150), (280, 330), (80, 330)))
 Seat2 = init_Seat(seat_number=1,coordinates=((360, 150), (560, 150), (560, 330), (360, 330)))
 
@@ -80,8 +81,7 @@ try:
                                 device = device, imgsz = image_size[::-1]) 
 
             #모델 결과를 통해 각 자리에 짐과 사람의 여부를 업데이트
-            current_seats_status = requests.get("http://127.0.0.1:8000/seats").json()
-            print(current_seats_status)
+            data:list = requests.get("http://127.0.0.1:8000/seats/admin", headers=headers).json()
             for seat in seat_manager.seats:
                 seat.is_person = False
                 seat.is_luggage = False
@@ -93,11 +93,10 @@ try:
                     elif cls != 0 and iou > iou_threshold:  # 짐
                         seat.is_luggage = True
                 #상태 업데이트
-                seat.status = current_seats_status[seat.seat_number]
-                print(seat.seat_number, " : ", seat.status)
+                seat.status = data[seat.seat_number][0]
+                seat.user_id = data[seat.seat_number][1]
                 seat.status_update()
-                print(seat.seat_number, " : ", seat.status)
-                requests.put(f"http://127.0.0.1:8000/seats/admin?seat_number={seat.seat_number}&seat_status={seat.status}",
+                requests.put(f"http://127.0.0.1:8000/seats/admin?seat_number={seat.seat_number}&seat_status={seat.status}&user_id={seat.user_id}",
                              headers=headers)
 
 
