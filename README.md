@@ -1,3 +1,5 @@
+# LibSeatTrackerAI
+
 ## Getting Started
 
 Follow these steps to run the project locally:
@@ -16,3 +18,10 @@ Follow these steps to run the project locally:
    ```bash
    streamlit run frontend/user_interface.py --server.port 8502
    ```
+
+## Using docker
+   
+This code runs a user interface and a backend server in docker.
+```bash
+docker-compose up -d --build
+```
