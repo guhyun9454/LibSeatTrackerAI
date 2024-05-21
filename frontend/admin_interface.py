@@ -62,7 +62,7 @@ try:
         time.sleep(1) #실제로는 1분
 
         success, image = cap.read()
-        print(success)
+        # print(success)
         if success:
             resized_image = cv2.resize(image, (640, 480))
 
