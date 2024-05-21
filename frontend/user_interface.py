@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import os
 
 # --- 화면 구성 ---
 st.title("좌석 예약")
@@ -17,12 +18,13 @@ except ValueError:
     st.stop()
 
 # --- 좌석 상태 초기화 및 서버 연동 ---
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://127.0.0.1:8000")
 try:
-    response = requests.get("http://127.0.0.1:8000/seats")
+    response = requests.get(f"{FASTAPI_URL}/seats")
     response.raise_for_status()  # 에러 발생 시 예외 처리
     st.session_state.seats = response.json()
 
-    data = requests.get(f"http://127.0.0.1:8000/seat/?user_id={user_id}").json()
+    data = requests.get(f"{FASTAPI_URL}/seat/?user_id={user_id}").json()
     if data.get("my_seat") is not None:
         st.session_state.my_seat = int(data.get('my_seat'))
     else:
@@ -42,7 +44,7 @@ for i, seat in enumerate(st.session_state.seats):
         if seat == 0:  # 예약 가능
             if st.button(f"예약하기", key=f"seatR_{i+1}",disabled=st.session_state.my_seat != -1):
                 try:
-                    response = requests.put(f"http://127.0.0.1:8000/seats/?seat_number={i}&user_id={user_id}")
+                    response = requests.put(f"{FASTAPI_URL}/seats/?seat_number={i}&user_id={user_id}")
                     response.raise_for_status()
                     st.session_state.seats = response.json()
                     st.rerun()
