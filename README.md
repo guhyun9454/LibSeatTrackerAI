@@ -11,12 +11,12 @@ Follow these steps to run the project locally:
 
 2. **Start the admin frontend:**
    ```bash
-   streamlit run frontend/admin_interface.py --server.port 8501
+   streamlit run frontend/admin/admin_interface.py --server.port 8501 -- --local
    ```
 
 3. **Start the user frontend:**
    ```bash
-   streamlit run frontend/user_interface.py --server.port 8502
+   streamlit run frontend/user/user_interface.py --server.port 8502
    ```
 
 ## Using docker

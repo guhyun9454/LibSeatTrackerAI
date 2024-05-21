@@ -5,8 +5,16 @@ import requests
 import base64
 import time
 import os
+import argparse
 
-FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://127.0.0.1:8000") # backend 서버 주소로 변경해야함
+parser = argparse.ArgumentParser(description='Streamlit app for REDDOT Demo')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--local', dest='local', action='store_true', help='Use local server')
+group.add_argument('--server', dest='local', action='store_false', help='Use remote server')
+parser.set_defaults(local=True)
+args = parser.parse_args()
+LOCAL = args.local
+FASTAPI_URL = "http://127.0.0.1:8000"if LOCAL else "http://211.201.175.131:50600" 
 
 def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
                          conf_threshold, iou_threshold):
@@ -55,7 +63,7 @@ iou_threshold = st.sidebar.slider("IOU Threshold", 0.0, 1.0, 0.15)
 st.sidebar.write("사람이나 짐이 얼마나 많이 겹쳐야 그 자리에 있다고 판별할지 설정합니다.")
 
 
-cap = load_VideoCapture(1)  # 웹캠
+cap = load_VideoCapture(0)  # 웹캠
 
 try:
     while cap.isOpened():
