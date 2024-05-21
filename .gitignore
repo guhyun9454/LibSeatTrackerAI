@@ -24,3 +24,4 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+yolo_weights/yolov8x.pt

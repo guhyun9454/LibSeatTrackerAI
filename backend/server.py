@@ -16,7 +16,7 @@ app = FastAPI()
 #초기 세팅
 image_size = (640, 480)
 device = "mps" if platform.system() == 'Darwin' else None
-model_path = "yolo_weights/yolov8s.pt"
+model_path = "yolo_weights/yolov8x.pt"
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
@@ -69,9 +69,8 @@ async def detect_objects(file: UploadFile = File(...),
 
     resized_image = cv2.resize(img, image_size)
     model_result = model.predict(resized_image, conf=conf_threshold,
-                                 verbose=False, classes=[0, 39, 41, 62, 63, 64, 66, 67, 73],
+                                 verbose=True, classes=[0, 39, 41, 62, 63, 64, 66, 67, 73],
                                  device=device, imgsz=image_size[::-1])
-
     #각 자리의 상태를 모델의 결과를 통해 업데이트
     for seat in seats_manager.seats:
         seat.is_person = False
