@@ -20,11 +20,22 @@ model_path = "yolo_weights/yolov8s.pt"
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
-seats_manager.add_seat(Seat(seat_number = 1, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
-seats_manager.add_seat(Seat(seat_number = 2, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+# seat_manager의 list 인덱스가 0부터 시작하기 때문에 코드상에서의 좌석 번호는 0부터 시작하게 정의하겠습니다. 프론트에서 보여줄 때 +1을 하겠습니다.
+seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
+seats_manager.add_seat(Seat(seat_number = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
 
 #ai 모델 세팅
 model = YOLO(model_path)
+
+@app.get("/seat/")
+async def get_my_seat(user_id: int):
+    """
+    예약을 위한 api
+    """
+    for seat in seats_manager.seats:
+        if seat.user_id == user_id:
+            return {"my_seat" : seat.seat_number}
+    raise HTTPException(status_code=404, detail="There are no seat you reserved.")
 
 @app.get("/seats/")
 async def get_seats():
