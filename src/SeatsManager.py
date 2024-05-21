@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 from .Seat import Seat
-from .Colors import get_color
-from .SeatStatus import SeatStatus, state_colors
+from .Colors import get_color, state_colors
 
 class SeatsManager:
     """

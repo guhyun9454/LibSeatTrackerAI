@@ -1,4 +1,4 @@
-from .SeatStatus import SeatStatus, TimeLimit
+from .SeatStatus import SeatStatus
 import numpy as np
 import cv2
 from .Colors import get_color
@@ -55,13 +55,13 @@ class Seat:
         self.is_luggage = False
         self.waited_time = 0
 
-    def status_update(self):
+    def status_update(self, RESERVED_WAITING_ENTRY = 5 ,TEMPORARILY_EMPTY = 5, CHECKING_OUT = 5):
         """
         분당 반복되야하는 함수. status를 업데이트 한다.
         """
         if self.status == SeatStatus.TEMPORARILY_EMPTY:
             self.waited_time += 1
-            if self.waited_time > TimeLimit.TEMPORARILY_EMPTY:
+            if self.waited_time > TEMPORARILY_EMPTY:
                 self.waited_time = 0
                 self.report_to_admin() # 관리자 연락
                 self.penalize_user() # 이용자 경고, 벌점
@@ -69,7 +69,7 @@ class Seat:
                 return
         elif self.status == SeatStatus.CHECKING_OUT:
             self.waited_time += 1
-            if self.waited_time > TimeLimit.CHECKING_OUT:
+            if self.waited_time > CHECKING_OUT:
                 self.waited_time = 0
                 self.check_out() # 퇴실 처리
                 self.status = SeatStatus.AVAILABLE
@@ -86,7 +86,7 @@ class Seat:
         else:
             if self.status == SeatStatus.RESERVED_WAITING_ENTRY:
                 self.waited_time += 1
-                if self.waited_time > TimeLimit.RESERVED_WAITING_ENTRY:
+                if self.waited_time > RESERVED_WAITING_ENTRY:
                     self.waited_time = 0
                     self.check_out() # 퇴실 처리
                     self.status = SeatStatus.AVAILABLE

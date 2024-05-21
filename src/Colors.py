@@ -1,3 +1,4 @@
+from src.SeatStatus import SeatStatus
 colors = {
     "red": (0, 0, 255),
     "green": (0, 255, 0),
@@ -15,6 +16,14 @@ colors = {
     "dark_red": (0, 0, 139),
     "dark_green": (0, 100, 0),
     "dark_blue": (139, 0, 0)
+}
+state_colors = {
+    SeatStatus.AVAILABLE: "green",
+    SeatStatus.IN_USE: "blue",
+    SeatStatus.UNAUTHORIZED_USE: "red",
+    SeatStatus.RESERVED_WAITING_ENTRY: "yellow",
+    SeatStatus.CHECKING_OUT: "orange",
+    SeatStatus.TEMPORARILY_EMPTY: "purple"
 }
 
 def get_color(name):

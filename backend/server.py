@@ -17,8 +17,6 @@ app = FastAPI()
 image_size = (640, 480)
 device = "mps" if platform.system() == 'Darwin' else None
 model_path = "yolo_weights/yolov8s.pt"
-iou_threshold = 0.2
-conf_threshold = 0.6
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
@@ -54,7 +52,12 @@ async def delete_all_seat():
     seats_manager.seats.clear()
 
 @app.post("/detect")
-async def detect_objects(file: UploadFile = File(...)):
+async def detect_objects(file: UploadFile = File(...), 
+                         reserved_waiting_entry: int = 5, 
+                         temporarily_empty: int = 5, 
+                         checking_out: int = 5,
+                         conf_threshold: float = 0.6,
+                         iou_threshold: float = 0.15):
     """
     입력으로 받은 이미지를 모델을 통해 처리 
     객체 탐지 결과를 그리고,
@@ -80,7 +83,7 @@ async def detect_objects(file: UploadFile = File(...)):
                 seat.is_person = True
             elif cls != 0 and iou > iou_threshold:  # 짐
                 seat.is_luggage = True
-        seat.status_update()
+        seat.status_update(reserved_waiting_entry, temporarily_empty, checking_out)
 
     
     # 웹캠 이미지에 DetectArea 그리기
