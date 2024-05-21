@@ -4,12 +4,15 @@ import numpy as np
 import requests
 import base64
 import time
+import os
+
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://127.0.0.1:8000") # backend 서버 주소로 변경해야함
 
 def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
                          conf_threshold, iou_threshold):
     _, encoded_img = cv2.imencode('.jpg', image)
     files = {'file': ('image.jpg', encoded_img.tobytes(), 'image/jpeg')}
-    response = requests.post("http://127.0.0.1:8000/detect", files=files,
+    response = requests.post(f"{FASTAPI_URL}/detect", files=files,
                              params={"reserved_waiting_entry": reserved_waiting_entry, 
                                      "temporarily_empty": temporarily_empty, 
                                      "checking_out": checking_out,
@@ -19,7 +22,7 @@ def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, check
     return base64.b64decode(response_data)
 
 def get_seat_diagram():
-    response = requests.get("http://127.0.0.1:8000/draw")
+    response = requests.get(f"{FASTAPI_URL}/draw")
     response_data = response.json()["image"]
     return base64.b64decode(response_data)
 
@@ -52,7 +55,7 @@ iou_threshold = st.sidebar.slider("IOU Threshold", 0.0, 1.0, 0.15)
 st.sidebar.write("사람이나 짐이 얼마나 많이 겹쳐야 그 자리에 있다고 판별할지 설정합니다.")
 
 
-cap = load_VideoCapture(0)  # 웹캠
+cap = load_VideoCapture(1)  # 웹캠
 
 try:
     while cap.isOpened():

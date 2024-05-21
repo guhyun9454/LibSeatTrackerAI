@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: ./backend  # backend 폴더
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # fast-api port
+    volumes:
+      - ./src:/app/src  # src 폴더를 backend 폴더에 마운트
+
+  frontend:
+    build:
+      context: ./frontend  # frontend 폴더
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501" # streamlit port
+    depends_on:
+      - backend
+    environment:
+      - FASTAPI_URL=http://backend:8000
