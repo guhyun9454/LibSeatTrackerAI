@@ -14,7 +14,7 @@ group.add_argument('--server', dest='local', action='store_false', help='Use rem
 parser.set_defaults(local=True)
 args = parser.parse_args()
 LOCAL = args.local
-FASTAPI_URL = "http://127.0.0.1:8000"if LOCAL else "http://211.201.175.131:50600" 
+FASTAPI_URL = "http://127.0.0.1:8000"if LOCAL else "https://5899-211-201-175-131.ngrok-free.app"
 
 def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
                          conf_threshold, iou_threshold):
@@ -67,7 +67,9 @@ cap = load_VideoCapture(0)  # 웹캠
 
 try:
     while cap.isOpened():
-        time.sleep(1) #실제로는 1분
+        delay_time = 5 # 원래는 60초
+
+        start_time = time.time()
 
         success, image = cap.read()
         # print(success)
@@ -88,6 +90,11 @@ try:
                 st_frame_col1.image(processed_image, caption='CCTV', channels="BGR", use_column_width=True)
             with col2:
                 st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
+
+            process_time = time.time() - start_time
+            print(f"Processing time: {process_time}")
+            if process_time < delay_time:
+                time.sleep(delay_time - process_time)
 
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))
