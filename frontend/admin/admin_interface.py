@@ -4,35 +4,42 @@ import numpy as np
 import requests
 import base64
 import time
-import os
-import argparse
+import sys
 
-parser = argparse.ArgumentParser(description='Streamlit app for REDDOT Demo')
-group = parser.add_mutually_exclusive_group()
-group.add_argument('--local', dest='local', action='store_true', help='Use local server')
-group.add_argument('--server', dest='local', action='store_false', help='Use remote server')
-parser.set_defaults(local=True)
-args = parser.parse_args()
-LOCAL = args.local
-FASTAPI_URL = "http://127.0.0.1:8000"if LOCAL else "https://5899-211-201-175-131.ngrok-free.app"
+
+BACKEND_URL = "http://127.0.0.1:8000"
+print("page reloaded")
+if 'time_passed' not in st.session_state:
+    st.session_state['time_passed'] = 0
 
 def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
                          conf_threshold, iou_threshold):
-    _, encoded_img = cv2.imencode('.jpg', image)
-    files = {'file': ('image.jpg', encoded_img.tobytes(), 'image/jpeg')}
-    response = requests.post(f"{FASTAPI_URL}/detect", files=files,
-                             params={"reserved_waiting_entry": reserved_waiting_entry, 
-                                     "temporarily_empty": temporarily_empty, 
-                                     "checking_out": checking_out,
-                                     "conf_threshold": conf_threshold,
-                                     "iou_threshold": iou_threshold})
-    response_data = response.json()["image"]
-    return base64.b64decode(response_data)
+    try:
+        _, encoded_img = cv2.imencode('.jpg', image)
+        files = {'file': ('image.jpg', encoded_img.tobytes(), 'image/jpeg')}
+        response = requests.post(f"{BACKEND_URL}/detect", files=files,
+                                params={"reserved_waiting_entry": reserved_waiting_entry, 
+                                        "temporarily_empty": temporarily_empty, 
+                                        "checking_out": checking_out,
+                                        "conf_threshold": conf_threshold,
+                                        "iou_threshold": iou_threshold})
+        response.raise_for_status()
+
+        response_data = response.json()["image"]
+        return base64.b64decode(response_data)
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
 
 def get_seat_diagram():
-    response = requests.get(f"{FASTAPI_URL}/draw")
-    response_data = response.json()["image"]
-    return base64.b64decode(response_data)
+    try:
+        response = requests.get(f"{BACKEND_URL}/draw")
+        response.raise_for_status()
+        response_data = response.json()["image"]
+        return base64.b64decode(response_data)
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
 
 @st.cache_resource
 def load_VideoCapture(type):
@@ -41,7 +48,7 @@ def load_VideoCapture(type):
 
 # 관리자 페이지 화면 설정
 st.title("REDDOT Demo")
-
+time_show = st.empty()
 col1, col2 = st.columns(2)
 with col1:
     st_frame_col1 = st.empty()
@@ -72,7 +79,11 @@ try:
         start_time = time.time()
 
         success, image = cap.read()
-        # print(success)
+        sys.stdout.write(f"\rtime passed: {st.session_state.time_passed} minutes, cap: {success}")
+        sys.stdout.flush()
+        time_show.text(f"Time passed: {st.session_state.time_passed} minutes")        
+        st.session_state.time_passed +=1
+
         if success:
             resized_image = cv2.resize(image, (640, 480))
 
