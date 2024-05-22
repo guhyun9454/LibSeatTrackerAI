@@ -55,6 +55,8 @@ class Seat:
         self.is_luggage = False
         self.waited_time = 0
 
+        self.luggage_waited_time = 0
+
     def status_update(self, RESERVED_WAITING_ENTRY = 5 ,TEMPORARILY_EMPTY = 5, CHECKING_OUT = 5):
         """
         분당 반복되야하는 함수. status를 업데이트 한다.
@@ -96,13 +98,13 @@ class Seat:
                     return
             elif self.status in (SeatStatus.IN_USE, SeatStatus.TEMPORARILY_EMPTY):
                 if self.is_luggage: # 짐이 있는가?
-                    self.waited_time =0 # 검토 안됨
+                    self.luggage_waited_time = 0 # 검토 안됨
                     self.status = SeatStatus.TEMPORARILY_EMPTY
                     return
                 else:
-                    self.waited_time += 1
-                    if self.waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
-                        self.waited_time = 0
+                    self.luggage_waited_time += 1
+                    if self.luggage_waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                        self.luggage_waited_time = 0
                         self.check_out() # 퇴실 처리
                         self.status = SeatStatus.AVAILABLE
                         return
@@ -110,13 +112,13 @@ class Seat:
                         return
             elif self.status == SeatStatus.CHECKING_OUT:
                 if self.is_luggage: # 짐이 있는가?
-                    self.waited_time =0 # 검토 안됨
+                    self.luggage_waited_time = 0 # 검토 안됨
                     self.status = SeatStatus.CHECKING_OUT
                     return
                 else:
-                    self.waited_time += 1
-                    if self.waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
-                        self.waited_time = 0
+                    self.luggage_waited_time += 1
+                    if self.luggage_waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                        self.luggage_waited_time = 0
                         self.check_out() # 퇴실 처리
                         self.status = SeatStatus.AVAILABLE
                         return
