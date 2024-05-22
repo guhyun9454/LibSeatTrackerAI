@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, UploadFile, File, Query
+from typing import List
 from fastapi.responses import JSONResponse
 from ultralytics import YOLO
 import cv2
@@ -88,7 +89,8 @@ async def detect_objects(file: UploadFile = File(...),
                          MAX_CHECKING_OUT: int = 5,
                          MAX_WITHOUT_LUGGAGE: int = 5,
                          conf_threshold: float = 0.6,
-                         iou_threshold: float = 0.15):
+                         iou_threshold: float = 0.15,
+                         detect_classes: List[int] = Query(...)):
     """
     입력으로 받은 이미지를 모델을 통해 처리 
     객체 탐지 결과를 그리고,
@@ -100,7 +102,7 @@ async def detect_objects(file: UploadFile = File(...),
 
     resized_image = cv2.resize(img, image_size)
     model_result = model.predict(resized_image, conf=conf_threshold,
-                                 verbose=True, classes=[0, 39, 41, 62, 63, 64, 66, 67, 73],
+                                 verbose=True, classes = detect_classes + [0],
                                  device=device, imgsz=image_size[::-1])
     #각 자리의 상태를 모델의 결과를 통해 업데이트
     for seat in seats_manager.seats:
