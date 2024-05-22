@@ -60,7 +60,7 @@ if 'time_passed' not in st.session_state:
 
 
 # 관리자 페이지 화면 설정
-st.title("REDDOT Demo")
+st.title("REDDOT Highfidelity Prototype")
 time_show = st.empty()
 col1, col2 = st.columns(2)
 with col1:
@@ -82,7 +82,6 @@ st.sidebar.write("사람과 짐이 자리와 얼마나 많이 겹쳐야 그 자�
 st.sidebar.divider()
 st.sidebar.write("탐지할 객체를 선택합니다.")
 selected_classes = [index for item, index in detect_items.items() if st.sidebar.checkbox(item,value=True)]
-print(selected_classes)
 
 cap = load_VideoCapture(0)  # 웹캠
 
@@ -90,7 +89,6 @@ try:
     while cap.isOpened():
         delay_time = 1 
         time.sleep(delay_time)
-        # start_time = time.time()
 
         success, image = cap.read()
         print(f"time passed: {st.session_state.time_passed} minutes, cap: {success}")
@@ -115,13 +113,5 @@ try:
             with col2:
                 st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
                 
-            # process_time = time.time() - start_time
-            # print(f"Processing time: {process_time}")
-            # if process_time < delay_time:
-            #     time.sleep(delay_time - process_time)
-
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))
-# finally:
-#     print("cap realeased")
-#     cap.release()

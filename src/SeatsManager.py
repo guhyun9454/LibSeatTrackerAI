@@ -45,10 +45,10 @@ class SeatsManager:
             person_text = "Person: Yes" if seat.is_person else "Person: No"
             luggage_text = "Luggage: Yes" if seat.is_luggage else "Luggage: No"
             
-            cv2.putText(self.image, seat_text, (cx - 180, cy - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, get_color("black"), 2)
-            cv2.putText(self.image, status_text, (cx - 180, cy - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, get_color("black"), 2)
-            cv2.putText(self.image, person_text, (cx - 180, cy + 15), cv2.FONT_HERSHEY_SIMPLEX, 1, get_color("black"), 2)
-            cv2.putText(self.image, luggage_text, (cx - 180, cy + 50), cv2.FONT_HERSHEY_SIMPLEX, 1, get_color("black"), 2)
+            cv2.putText(self.image, seat_text, (cx - 100, cy - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, get_color("black"), 2)
+            cv2.putText(self.image, status_text, (cx - 100, cy - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.8, get_color("black"), 2)
+            cv2.putText(self.image, person_text, (cx - 100, cy + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.8, get_color("black"), 2)
+            cv2.putText(self.image, luggage_text, (cx - 100, cy + 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, get_color("black"), 2)
     
     def get_color_by_state(self, state):
         return state_colors.get(state, "black")

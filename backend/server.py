@@ -22,11 +22,11 @@ model_path = "yolo_weights/yolov8x.pt"
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
 # #두 자리 세팅
-# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
-# seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
+seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
 
 #영상 시연용 한 자리 세팅
-seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
+# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
 
 #ai 모델 세팅
 model = YOLO(model_path)
