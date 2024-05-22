@@ -96,20 +96,32 @@ class Seat:
                     return
             elif self.status in (SeatStatus.IN_USE, SeatStatus.TEMPORARILY_EMPTY):
                 if self.is_luggage: # 짐이 있는가?
+                    self.waited_time =0 # 검토 안됨
                     self.status = SeatStatus.TEMPORARILY_EMPTY
                     return
                 else:
-                    self.check_out() # 퇴실 처리
-                    self.status = SeatStatus.AVAILABLE
-                    return
+                    self.waited_time += 1
+                    if self.waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                        self.waited_time = 0
+                        self.check_out() # 퇴실 처리
+                        self.status = SeatStatus.AVAILABLE
+                        return
+                    else:
+                        return
             elif self.status == SeatStatus.CHECKING_OUT:
                 if self.is_luggage: # 짐이 있는가?
+                    self.waited_time =0 # 검토 안됨
                     self.status = SeatStatus.CHECKING_OUT
                     return
                 else:
-                    self.check_out() # 퇴실 처리
-                    self.status = SeatStatus.AVAILABLE
-                    return
+                    self.waited_time += 1
+                    if self.waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                        self.waited_time = 0
+                        self.check_out() # 퇴실 처리
+                        self.status = SeatStatus.AVAILABLE
+                        return
+                    else:
+                        return
             elif self.is_luggage: # 짐이 있는가?
                 self.report_to_admin() # 관리자 연락
                 self.status = SeatStatus.UNAUTHORIZED_USE
@@ -118,6 +130,8 @@ class Seat:
                 self.check_out() # 퇴실 처리
                 self.status = SeatStatus.AVAILABLE
                 return
+
+        print("도달하면 안되는 코드")
 
     def check_in(self, user_id : int): # 입실 처리 과정
         if self.status == SeatStatus.AVAILABLE:
