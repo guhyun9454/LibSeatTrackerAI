@@ -57,13 +57,13 @@ class Seat:
 
         self.luggage_waited_time = 0
 
-    def status_update(self, RESERVED_WAITING_ENTRY = 5 ,TEMPORARILY_EMPTY = 5, CHECKING_OUT = 5):
+    def status_update(self, MAX_WAITING4ENTRY = 5 ,MAX_TEMPORARILY_EMPTY = 5, MAX_CHECKING_OUT = 5, MAX_WITHOUT_LUGGAGE = 5):
         """
         분당 반복되야하는 함수. status를 업데이트 한다.
         """
         if self.status == SeatStatus.TEMPORARILY_EMPTY:
             self.waited_time += 1
-            if self.waited_time > TEMPORARILY_EMPTY:
+            if self.waited_time > MAX_TEMPORARILY_EMPTY:
                 self.waited_time = 0
                 self.report_to_admin() # 관리자 연락
                 self.penalize_user() # 이용자 경고, 벌점
@@ -71,7 +71,7 @@ class Seat:
                 return
         elif self.status == SeatStatus.CHECKING_OUT:
             self.waited_time += 1
-            if self.waited_time > CHECKING_OUT:
+            if self.waited_time > MAX_CHECKING_OUT:
                 self.waited_time = 0
                 self.check_out() # 퇴실 처리
                 self.status = SeatStatus.AVAILABLE
@@ -88,7 +88,7 @@ class Seat:
         else:
             if self.status == SeatStatus.RESERVED_WAITING_ENTRY:
                 self.waited_time += 1
-                if self.waited_time > RESERVED_WAITING_ENTRY:
+                if self.waited_time > MAX_WAITING4ENTRY:
                     self.waited_time = 0
                     self.check_out() # 퇴실 처리
                     self.status = SeatStatus.AVAILABLE
@@ -103,7 +103,7 @@ class Seat:
                     return
                 else:
                     self.luggage_waited_time += 1
-                    if self.luggage_waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                    if self.luggage_waited_time > MAX_WITHOUT_LUGGAGE: # MAX_WITHOUT_LUGGAGE번의 update 동안 짐이 없으면 자리비움 진행
                         self.luggage_waited_time = 0
                         self.check_out() # 퇴실 처리
                         self.status = SeatStatus.AVAILABLE
@@ -132,8 +132,6 @@ class Seat:
                 self.check_out() # 퇴실 처리
                 self.status = SeatStatus.AVAILABLE
                 return
-
-        print("도달하면 안되는 코드")
 
     def check_in(self, user_id : int): # 입실 처리 과정
         if self.status == SeatStatus.AVAILABLE:

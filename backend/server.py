@@ -20,9 +20,11 @@ model_path = "yolo_weights/yolov8x.pt"
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
-# seat_manager의 list 인덱스가 0부터 시작하기 때문에 코드상에서의 좌석 번호는 0부터 시작하게 정의하겠습니다. 프론트에서 보여줄 때 +1을 하겠습니다.
-seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
-seats_manager.add_seat(Seat(seat_number = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+# #두 자리 세팅
+# seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
+# seats_manager.add_seat(Seat(seat_number = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+#영상 시연용 한 자리 세팅
+seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
 
 #ai 모델 세팅
 model = YOLO(model_path)
@@ -68,9 +70,10 @@ async def delete_all_seat():
 
 @app.post("/detect")
 async def detect_objects(file: UploadFile = File(...), 
-                         reserved_waiting_entry: int = 5, 
-                         temporarily_empty: int = 5, 
-                         checking_out: int = 5,
+                         MAX_WAITING4ENTRY: int = 5, 
+                         MAX_TEMPORARILY_EMPTY: int = 5, 
+                         MAX_CHECKING_OUT: int = 5,
+                         MAX_WITHOUT_LUGGAGE: int = 5,
                          conf_threshold: float = 0.6,
                          iou_threshold: float = 0.15):
     """
@@ -97,7 +100,7 @@ async def detect_objects(file: UploadFile = File(...),
                 seat.is_person = True
             elif cls != 0 and iou > iou_threshold:  # 짐
                 seat.is_luggage = True
-        seat.status_update(reserved_waiting_entry, temporarily_empty, checking_out)
+        seat.status_update(MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY, MAX_CHECKING_OUT, MAX_WITHOUT_LUGGAGE)
 
     
     # 웹캠 이미지에 DetectArea 그리기

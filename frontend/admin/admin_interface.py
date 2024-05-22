@@ -54,14 +54,17 @@ with col1:
     st_frame_col1 = st.empty()
 with col2:
     st_frame_col2 = st.empty()
-reserved_waiting_entry = st.sidebar.number_input("Reserved Waiting Entry Time (minutes)", min_value=1, value=5)
+reserved_waiting_entry = st.sidebar.number_input("MAX_WAITING4ENTRY (minutes)", min_value=1, value=5)
 st.sidebar.write("예약 후 최대 대기 시간")
 
-temporarily_empty = st.sidebar.number_input("Temporarily Empty Time (minutes)", min_value=1, value=5)
+temporarily_empty = st.sidebar.number_input("MAX_TEMPORARILY_EMPTY  (minutes)", min_value=1, value=5)
 st.sidebar.write("가능한 최대 자리비움 시간")
 
-checking_out = st.sidebar.number_input("Checking Out Time (minutes)", min_value=1, value=5)
+checking_out = st.sidebar.number_input("MAX_CHECKING_OUT  (minutes)", min_value=1, value=5)
 st.sidebar.write("최대 자리비움 시간이 지나고, 퇴실까지 대기시간")
+
+checking_out = st.sidebar.number_input("MAX_WITHOUT_LUGGAGE (minutes)", min_value=1, value=5)
+st.sidebar.write("짐이 없는 경우 자동 퇴실까지 대기 시간")
 
 conf_threshold = st.sidebar.slider("Confidence Threshold", 0.3, 1.0, 0.6) 
 st.sidebar.write("탐지 확률이 얼마나 높아야 객체로 판별할지 설정합니다.")
@@ -74,13 +77,12 @@ cap = load_VideoCapture(0)  # 웹캠
 
 try:
     while cap.isOpened():
-        delay_time = 5 # 원래는 60초
-
-        start_time = time.time()
+        delay_time = 1 
+        time.sleep(delay_time)
+        # start_time = time.time()
 
         success, image = cap.read()
-        sys.stdout.write(f"\rtime passed: {st.session_state.time_passed} minutes, cap: {success}")
-        sys.stdout.flush()
+        print(f"time passed: {st.session_state.time_passed} minutes, cap: {success}")
         time_show.text(f"Time passed: {st.session_state.time_passed} minutes")        
         st.session_state.time_passed +=1
 
@@ -102,10 +104,10 @@ try:
             with col2:
                 st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
 
-            process_time = time.time() - start_time
-            print(f"Processing time: {process_time}")
-            if process_time < delay_time:
-                time.sleep(delay_time - process_time)
+            # process_time = time.time() - start_time
+            # print(f"Processing time: {process_time}")
+            # if process_time < delay_time:
+            #     time.sleep(delay_time - process_time)
 
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))
