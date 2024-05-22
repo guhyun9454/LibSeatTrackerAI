@@ -40,7 +40,7 @@ class SeatsManager:
                 cx, cy = 0, 0
 
             # seat number와 상태, 사람 유무 및 짐 유무를 표시
-            seat_text = f"Seat {seat.seat_number}"
+            seat_text = f"Seat {seat.seat_id}"
             status_text = f"Status: {seat.status.name}"
             person_text = "Person: Yes" if seat.is_person else "Person: No"
             luggage_text = "Luggage: Yes" if seat.is_luggage else "Luggage: No"

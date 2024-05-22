@@ -27,7 +27,7 @@ class DetectArea:
         cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
 class Seat:
-    def __init__(self, seat_number: int, coordinates: tuple, status=SeatStatus.AVAILABLE, user_id=-1):
+    def __init__(self, seat_id: int, coordinates: tuple, status=SeatStatus.AVAILABLE, user_id=-1):
         """
         DetectArea (DetectArea객체):
         자리의 카메라상의 구역을 나타내는 객체
@@ -47,7 +47,7 @@ class Seat:
         사용중이지 않다면, -1
         """
         self.DetectArea = DetectArea(coordinates)
-        self.seat_number = seat_number
+        self.seat_id = seat_id
         self.status = status
         self.user_id = user_id
 

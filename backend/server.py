@@ -21,10 +21,11 @@ model_path = "yolo_weights/yolov8x.pt"
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
 # #두 자리 세팅
-# seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
-# seats_manager.add_seat(Seat(seat_number = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
+# seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+
 #영상 시연용 한 자리 세팅
-seats_manager.add_seat(Seat(seat_number = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
+seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
 
 #ai 모델 세팅
 model = YOLO(model_path)
@@ -40,20 +41,32 @@ async def get_my_seat(user_id: int):
     """
     for seat in seats_manager.seats:
         if seat.user_id == user_id:
-            return {"my_seat" : seat.seat_number}
+            return {"my_seat" : seat.seat_id}
     raise HTTPException(status_code=404, detail="There are no seat you reserved.")
 
-@app.get("/seats/")
-async def get_seats():
+@app.get("/seats/status")
+async def get_seats_statuses():
     return [seat.status for seat in seats_manager.seats]
 
-@app.put("/seats/")
-async def reserve_seat(seat_number: int, user_id: int):
-    if seat_number < 0 or seat_number >= len(seats_manager.seats):
+@app.get("/seats/id")
+async def get_seats_ids():
+    return [seat.seat_id for seat in seats_manager.seats]
+
+@app.get("/seats/is_person")
+async def get_seats_status():
+    return [seat.is_person for seat in seats_manager.seats]
+
+@app.get("/seats/is_luggage")
+async def get_seats_status():
+    return [seat.is_luggage for seat in seats_manager.seats]
+
+@app.put("/reserve/")
+async def reserve_seat(seat_id: int, user_id: int):
+    if seat_id < 0 or seat_id >= len(seats_manager.seats):
         raise HTTPException(status_code=404, detail="Seat number isn't available")
-    if seats_manager.seats[seat_number].status == SeatStatus.AVAILABLE:
-        seats_manager.seats[seat_number].user_id = user_id
-        seats_manager.seats[seat_number].status = SeatStatus.RESERVED_WAITING_ENTRY
+    if seats_manager.seats[seat_id].status == SeatStatus.AVAILABLE:
+        seats_manager.seats[seat_id].user_id = user_id
+        seats_manager.seats[seat_id].status = SeatStatus.RESERVED_WAITING_ENTRY
         return {"message": "Seat reserved successfully"}
     else:
         raise HTTPException(status_code=404, detail="Seat isn't available")
@@ -106,7 +119,7 @@ async def detect_objects(file: UploadFile = File(...),
     # 웹캠 이미지에 DetectArea 그리기
     res = model_result[0].plot()
     for seat in seats_manager.seats:
-        color_name = "dark_red" if seat.seat_number == 0 else "dark_blue"
+        color_name = "dark_red" if seat.seat_id == 0 else "dark_blue"
         seat.DetectArea.draw(res, color_name=color_name, alpha=0.5)
 
 

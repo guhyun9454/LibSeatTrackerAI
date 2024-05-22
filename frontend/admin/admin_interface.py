@@ -103,7 +103,7 @@ try:
                 st_frame_col1.image(processed_image, caption='CCTV', channels="BGR", use_column_width=True)
             with col2:
                 st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
-
+                
             # process_time = time.time() - start_time
             # print(f"Processing time: {process_time}")
             # if process_time < delay_time:
