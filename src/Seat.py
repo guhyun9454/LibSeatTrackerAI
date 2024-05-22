@@ -78,8 +78,9 @@ class Seat:
                 return
 
         if self.is_person:  # 사람이 있는가?
-            if self.status in (SeatStatus.RESERVED_WAITING_ENTRY, SeatStatus.IN_USE, SeatStatus.CHECKING_OUT):
+            if self.status in (SeatStatus.RESERVED_WAITING_ENTRY, SeatStatus.IN_USE, SeatStatus.CHECKING_OUT, SeatStatus.TEMPORARILY_EMPTY):
                 self.status = SeatStatus.IN_USE
+                self.waited_time = 0
                 return
             else:
                 self.report_to_admin() # 관리자 연락
@@ -117,7 +118,7 @@ class Seat:
                     return
                 else:
                     self.luggage_waited_time += 1
-                    if self.luggage_waited_time > 3: # 3번의 update 동안 짐이 없으면 자리비움 진행
+                    if self.luggage_waited_time > MAX_WITHOUT_LUGGAGE: # 3번의 update 동안 짐이 없으면 자리비움 진행
                         self.luggage_waited_time = 0
                         self.check_out() # 퇴실 처리
                         self.status = SeatStatus.AVAILABLE
