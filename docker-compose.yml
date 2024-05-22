@@ -20,3 +20,23 @@ services:
       - backend
     environment:
       - FASTAPI_URL=http://backend:8000
+
+  ngrok-frontend:
+    image: wernight/ngrok
+    command: ngrok http frontend:30000
+    depends_on:
+      - frontend
+    environment:
+      - NGROK_AUTHTOKEN=<your_ngrok_auth_token>
+    ports:
+      - "4040:4040" # 생성된 URL을 볼 수 있는 ngrok 웹 인터페이스
+
+  ngrok-backend:
+    image: wernight/ngrok
+    command: ngrok http backend:8000
+    depends_on:
+      - backend
+    environment:
+      - NGROK_AUTHTOKEN=<your_ngrok_auth_token>
+    ports:
+      - "4041:4040" # 생성된 URL을 볼 수 있는 ngrok 웹 인터페이스
