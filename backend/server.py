@@ -27,6 +27,10 @@ seats_manager.add_seat(Seat(seat_number = 1, coordinates = ((360, 150), (560, 15
 #ai 모델 세팅
 model = YOLO(model_path)
 
+@app.get("/")
+async def health_check():
+    return True
+
 @app.get("/seat/")
 async def get_my_seat(user_id: int):
     """
