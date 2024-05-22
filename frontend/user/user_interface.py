@@ -44,7 +44,7 @@ for i, seat in enumerate(st.session_state.seats):
         if seat == 0:  # 예약 가능
             if st.button(f"예약하기", key=f"seatR_{i+1}",disabled=st.session_state.my_seat != -1):
                 try:
-                    response = requests.put(f"{FASTAPI_URL}/reserve/?seat_number={i}&user_id={user_id}")
+                    response = requests.put(f"{FASTAPI_URL}/reserve/?seat_id={i}&user_id={user_id}")
                     response.raise_for_status()
                     st.session_state.seats = response.json()
                     st.rerun()
