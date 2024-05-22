@@ -1,8 +1,0 @@
-authtoken: <your_ngrok_auth_token>
-tunnels:
-  frontend:
-    proto: http
-    addr: frontend:30000
-  backend:
-    proto: http
-    addr: backend:8000

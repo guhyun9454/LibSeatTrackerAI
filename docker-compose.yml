@@ -21,14 +21,22 @@ services:
     environment:
       - FASTAPI_URL=http://backend:8000
 
-  ngrok:
+  ngrok-frontend:
     image: wernight/ngrok
-    volumes:
-      - ./ngrok.yml:/ngrok.yml
-    command: ngrok start --all -config /ngrok.yml
+    command: ngrok http frontend:30000
     depends_on:
       - frontend
-      - backend
+    environment:
+      - NGROK_AUTHTOKEN=<your_ngrok_auth_token>
     ports:
-      - "4040:4040" # ngrok 웹 인터페이스
-      - "4041:4041" # ngrok 웹 인터페이스
+      - "4040:4040" # 생성된 URL을 볼 수 있는 ngrok 웹 인터페이스
+
+  ngrok-backend:
+    image: wernight/ngrok
+    command: ngrok http backend:8000
+    depends_on:
+      - backend
+    environment:
+      - NGROK_AUTHTOKEN=<your_ngrok_auth_token>
+    ports:
+      - "4041:4040" # 생성된 URL을 볼 수 있는 ngrok 웹 인터페이스
