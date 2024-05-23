@@ -19,6 +19,13 @@ Follow these steps to run the project locally:
    streamlit run frontend/user/user_interface.py --server.port 8502
    ```
 
+4. **Start the seat_reservation_app :**
+   ```bash 
+   flutter pub get 
+   open -a Simulator 
+   flutter run 
+   ```
+
 ## Using docker
    
 This code runs a user interface and a backend server in docker.
