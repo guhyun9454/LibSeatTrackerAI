@@ -142,7 +142,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
     if (index < seatStatuses.length) {
       return getStatusColor(seatStatuses[index]);
     } else {
-      return Colors.grey;
+      return const Color.fromARGB(255, 183, 183, 183);
     }
   }
 
