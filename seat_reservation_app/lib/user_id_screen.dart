@@ -74,15 +74,54 @@ class _UserIdScreenState extends State<UserIdScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 170), // 전체적으로 아래로 이동
+            SizedBox(height: 90), // 전체적으로 아래로 이동
+            Text(
+              '로그인',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text(
+                  '아이디 저장',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 154, 154, 154),
+                    fontSize: 15,
+                  ),
+                ),
+                SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(
+                    isSaved ? Icons.check_box : Icons.check_box_outline_blank,
+                    color: Color(0xFFA40F16),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (isSaved) {
+                        _clearSavedUserId();
+                        isSaved = false;
+                      } else {
+                        _saveUserId();
+                        isSaved = true;
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 5),
             Container(
               width: double.infinity,
-              height: 60,
+              height: 55,
               margin: EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: Color(0xFFF0F0F0),
                 border: Border.all(
-                    width: 1, color: Color.fromARGB(255, 101, 67, 67)),
+                    width: 1, color: Color.fromARGB(255, 184, 184, 184)),
               ),
               child: Row(
                 children: [
@@ -133,12 +172,12 @@ class _UserIdScreenState extends State<UserIdScreen> {
               ),
             Container(
               width: double.infinity,
-              height: 60,
+              height: 55,
               margin: EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: Color(0xFFF0F0F0),
                 border: Border.all(
-                    width: 1, color: Color.fromARGB(255, 101, 67, 67)),
+                    width: 1, color: Color.fromARGB(255, 184, 184, 184)),
               ),
               child: Row(
                 children: [
@@ -165,39 +204,10 @@ class _UserIdScreenState extends State<UserIdScreen> {
                 ],
               ),
             ),
-            Row(
-              children: [
-                Text(
-                  '아이디 저장',
-                  style: TextStyle(
-                    color: Color(0xFF6E6E6E),
-                    fontSize: 15,
-                  ),
-                ),
-                SizedBox(width: 10),
-                IconButton(
-                  icon: Icon(
-                    isSaved ? Icons.check_box : Icons.check_box_outline_blank,
-                    color: Color(0xFFA40F16),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      if (isSaved) {
-                        _clearSavedUserId();
-                        isSaved = false;
-                      } else {
-                        _saveUserId();
-                        isSaved = true;
-                      }
-                    });
-                  },
-                ),
-              ],
-            ),
             SizedBox(height: 20),
             Container(
               width: double.infinity,
-              height: 50,
+              height: 55,
               decoration: ShapeDecoration(
                 color: Color(0xFFA40F16),
                 shape: RoundedRectangleBorder(
@@ -228,7 +238,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
                     '로그인',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 18,
                     ),
                   ),
                 ),
