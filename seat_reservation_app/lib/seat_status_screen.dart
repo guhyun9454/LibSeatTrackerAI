@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'reading_room_status_screen.dart';
+import 'user_id_screen.dart';
 
 class SeatStatusScreen extends StatefulWidget {
   final int userId;
@@ -71,7 +73,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
       setState(() {
         errorMessage = '좌석 정보를 가져오는 중 오류 발생: $e';
       });
-      print('Exception: $e'); // 디버깅을 위한 예외 메시지 출력
+      print('Exception: $e');
     }
   }
 
@@ -103,7 +105,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
       setState(() {
         errorMessage = '사용자 좌석 정보를 가져오는 중 오류 발생: $e';
       });
-      print('Exception: $e'); // 디버깅을 위한 예외 메시지 출력
+      print('Exception: $e');
     }
   }
 
@@ -347,7 +349,13 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ReadingRoomStatusScreen(userId: widget.userId),
+              ),
+            );
           },
           color: Colors.black, // 아이콘 색상 변경
         ),
@@ -355,7 +363,10 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
           IconButton(
             icon: Icon(Icons.close),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => UserIdScreen()),
+              );
             },
             color: Colors.black, // 아이콘 색상 변경
           ),
