@@ -129,9 +129,16 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              '사용 중인 좌석: $occupiedSeats / $totalSeats',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                '사용 중인 좌석: $occupiedSeats / $totalSeats',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
             SizedBox(height: 20),
             Container(
@@ -143,27 +150,41 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
               ),
             ),
             SizedBox(height: 20),
-            Text(
-              '사용 가능한 좌석: $availableSeats',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green),
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                '사용 가능한 좌석: $availableSeats',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
+              ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: occupiedSeats < totalSeats
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SeatStatusScreen(userId: widget.userId),
-                        ),
-                      );
-                    }
-                  : null,
-              child: Text('Proceed to Seat Assignment'),
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: ElevatedButton(
+                onPressed: occupiedSeats < totalSeats
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                SeatStatusScreen(userId: widget.userId),
+                          ),
+                        );
+                      }
+                    : null,
+                child: Text('Proceed to Seat Assignment'),
+              ),
             ),
             if (errorMessage != null)
               Padding(
