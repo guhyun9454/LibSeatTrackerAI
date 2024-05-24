@@ -16,14 +16,16 @@ class ReadingRoomStatusScreen extends StatefulWidget {
 
 class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
   final String apiUrl = 'http://127.0.0.1:8000/seats/status';
+  final String numberOfSeatsUrl = 'http://127.0.0.1:8000/seats/number';
   Timer? timer;
   List<int> seatStatuses = [];
-  int totalSeats = 149; // Actual total seat count
+  int totalSeats = 0;
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
+    fetchTotalSeats();
     fetchSeatStatuses();
     timer = Timer.periodic(
         const Duration(seconds: 5), (Timer t) => fetchSeatStatuses());
@@ -33,6 +35,26 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
   void dispose() {
     timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> fetchTotalSeats() async {
+    try {
+      final response = await http.get(Uri.parse(numberOfSeatsUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          totalSeats = int.parse(response.body);
+        });
+      } else {
+        setState(() {
+          errorMessage =
+              'Error while fetching total seats: ${response.reasonPhrase}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error while fetching total seats: $e';
+      });
+    }
   }
 
   Future<void> fetchSeatStatuses() async {
