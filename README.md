@@ -1,5 +1,14 @@
 # LibSeatTrackerAI
 
+## About Project
+![Example Image](img/1.jpeg)
+![Example Image](img/2.jpeg)
+![Example Image](img/3.jpeg)
+![Example Image](img/4.jpeg)
+![Example Image](img/5.jpeg)
+![Example Image](img/6.jpeg)
+![Example Image](img/7.jpeg)
+
 ## Getting Started
 
 Follow these steps to run the project locally:
