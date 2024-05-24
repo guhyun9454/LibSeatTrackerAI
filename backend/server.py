@@ -45,6 +45,10 @@ async def get_my_seat(user_id: int):
             return {"my_seat" : seat.seat_id}
     raise HTTPException(status_code=404, detail="There are no seat you reserved.")
 
+@app.get("/seats/number")
+async def get_number_of_seats():
+    return len(seats_manager.seats)
+
 @app.get("/seats/status")
 async def get_seats_statuses():
     return [seat.status for seat in seats_manager.seats]
