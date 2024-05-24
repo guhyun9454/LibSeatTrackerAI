@@ -52,6 +52,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Back 버튼 제거
         backgroundColor: Colors.white,
         title: Text(
           '학번 입력',
