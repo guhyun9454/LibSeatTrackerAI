@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'seat_status_screen.dart';
+import 'reading_room_status_screen.dart';
 import 'package:flutter/services.dart';
 
 class UserIdScreen extends StatefulWidget {
@@ -24,17 +24,15 @@ class _UserIdScreenState extends State<UserIdScreen> {
     final prefs = await SharedPreferences.getInstance();
     final savedUserId = prefs.getString('savedUserId');
     final saved = prefs.getBool('isSaved') ?? false;
-    if (savedUserId != null && saved) {
-      setState(() {
+    setState(() {
+      if (savedUserId != null && saved) {
         _userIdController.text = savedUserId;
         isSaved = saved;
-      });
-    } else {
-      setState(() {
+      } else {
         _userIdController.clear();
         isSaved = false;
-      });
-    }
+      }
+    });
   }
 
   Future<void> _saveUserId() async {
@@ -225,7 +223,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              SeatStatusScreen(userId: userId),
+                              ReadingRoomStatusScreen(userId: userId),
                         ),
                       );
                     } else {
