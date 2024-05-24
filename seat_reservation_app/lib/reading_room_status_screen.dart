@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'seat_status_screen.dart';
+import 'user_id_screen.dart'; // Add this import
 
 class ReadingRoomStatusScreen extends StatefulWidget {
   final int userId;
@@ -116,7 +117,10 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => UserIdScreen()),
+            );
           },
           color: Colors.black, // Icon color changed
         ),
