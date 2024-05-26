@@ -12,7 +12,6 @@ from src.SeatsManager import SeatsManager
 from src.User import User
 from src.UsersManager import UsersManager
 from src.Seat import Seat
-from src.IoU import calculate_iou
 
 def ndarray_to_b64(img):
     _, encoded_img = cv2.imencode('.jpg', img)
@@ -26,16 +25,18 @@ image_size = (640, 480)
 device = "mps" if platform.system() == 'Darwin' else None
 model_path = "yolo_weights/yolov8x.pt"
 
-#자리 세팅 
-seats_manager = SeatsManager(image_size)
-seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
-seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
-# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390)))) #영상 시연용 한 자리 세팅
-
 #유저 세팅
 users_manager = UsersManager()
 users_manager.add_user(User(1234,"인공지능학과","홍길동"))
 users_manager.add_user(User(5678,"컴퓨터공학과","고길동"))
+
+#자리 세팅 
+seats_manager = SeatsManager(image_size,users_manager)
+seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
+seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390)))) #영상 시연용 한 자리 세팅
+
+
 
 #ai 모델 세팅
 model = YOLO(model_path)
@@ -132,19 +133,8 @@ async def detect_objects(file: UploadFile = File(...),
                                  verbose=True, classes = detect_classes + [0],
                                  device=device, imgsz=image_size[::-1])
     #각 자리의 상태를 모델의 결과를 통해 업데이트
-    for seat in seats_manager.seats:
-        seat.is_person = False
-        seat.is_luggage = False
-        for result in model_result[0].boxes:
-            cls = int(result.cls[0])
-            iou = calculate_iou(seat.DetectArea.polygon.reshape(-1)[[0, 1, 4, 5]], result.xyxy[0])
-            if cls == 0 and iou > iou_threshold:  # 사람
-                seat.is_person = True
-            elif cls != 0 and iou > iou_threshold:  # 짐
-                seat.is_luggage = True
-        seat.status_update(MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY, MAX_CHECKING_OUT, MAX_WITHOUT_LUGGAGE)
+    seats_manager.update_all_seats(model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE)
 
-    
     # 웹캠 이미지에 DetectArea 그리기
     res = model_result[0].plot()
     for seat in seats_manager.seats:
