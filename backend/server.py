@@ -53,11 +53,11 @@ async def get_seats_ids():
     return [seat.seat_id for seat in seats_manager.seats]
 
 @app.get("/seats/is_person")
-async def get_seats_status():
+async def get_seats_is_person():
     return [seat.is_person for seat in seats_manager.seats]
 
 @app.get("/seats/is_luggage")
-async def get_seats_status():
+async def get_seats_is_luggage():
     return [seat.is_luggage for seat in seats_manager.seats]
 
 #유저 정보를 받아오는 API
@@ -66,6 +66,14 @@ async def login(user_id: int):
     user = users_manager.find_user(user_id)
     if user:
         return {"message": "User found", "user": {"user_id": user.user_id, "department": user.department, "name": user.name, "warning_count": user.warning_count}}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+@app.post("usr/warning_count")
+async def get_warning_count(user_id: int):
+    user = users_manager.find_user(user_id)
+    if user:
+        return {"warning_count": user.warning_count}
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
