@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'reading_room_status_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 class UserIdScreen extends StatefulWidget {
   @override
@@ -45,6 +45,30 @@ class _UserIdScreenState extends State<UserIdScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('savedUserId');
     await prefs.setBool('isSaved', false);
+  }
+
+  Future<void> _login(int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/login?user_id=$userId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        setState(() {
+          errorMessage = '유효한 학번을 입력해주세요.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = '로그인 중 오류가 발생했습니다.';
+      });
+    }
   }
 
   @override
@@ -220,13 +244,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
                       setState(() {
                         errorMessage = null;
                       });
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ReadingRoomStatusScreen(userId: userId),
-                        ),
-                      );
+                      _login(userId);
                     } else {
                       setState(() {
                         errorMessage = '유효한 학번을 입력해주세요.';
