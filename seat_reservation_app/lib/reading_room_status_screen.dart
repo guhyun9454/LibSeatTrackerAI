@@ -145,7 +145,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 16), // Adjust button padding
+                          vertical: 8, horizontal: 15), // Adjust button padding
                       backgroundColor:
                           Color(0xFF111E63), // Background color set to navy
                       foregroundColor: Colors.white, // Text color set to white
@@ -251,7 +251,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
                 },
               ),
               SizedBox(
-                  height: 40), // Add space between the header and containers
+                  height: 20), // Add space between the header and containers
               if (isExpanded) ...[
                 buildReadingRoomContainer('1F 제 1열람실', occupiedSeats,
                     totalSeats, availableSeats, progress),
@@ -335,87 +335,20 @@ class _StatusHeaderState extends State<StatusHeader> {
           ),
         ],
       ),
-
-      SizedBox(height: 30), // Add space between the rows and dropdown
-      Container(
-        width: 450.38,
-        height: 45,
-        decoration: BoxDecoration(color: Color(0xFFA40F16)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                '도서관 선택     |',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+      Transform(
+        transform: Matrix4.identity()
+          ..translate(200.0, 25.0)
+          ..rotateZ(3.13),
+        child: GestureDetector(
+          onTap: widget.onToggle,
+          child: Container(
+            width: 15,
+            height: 15,
+            decoration: ShapeDecoration(
+              color: Color(0xFF111E63),
+              shape: StarBorder.polygon(sides: 3),
             ),
-            Transform(
-              transform: Matrix4.identity()..translate(-50.0, 10.0),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: selectedCampus,
-                  items: <String>['국제캠퍼스', '서울캠퍼스'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          color: Colors
-                              .black, // Set the text color to black for dropdown items
-                          fontSize: 15,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedCampus = newValue!;
-                    });
-                  },
-                  dropdownColor: Colors
-                      .white, // Set the dropdown background color to white
-                  style: TextStyle(
-                    color: Colors
-                        .white, // Set the text color to white for selected item
-                  ),
-                  selectedItemBuilder: (BuildContext context) {
-                    return <String>['국제캠퍼스', '서울캠퍼스'].map((String value) {
-                      return Text(
-                        selectedCampus,
-                        style: TextStyle(
-                          color: Colors
-                              .white, // Set the text color to white for the main display
-                          fontSize: 15,
-                        ),
-                      );
-                    }).toList();
-                  },
-                ),
-              ),
-            ),
-            Transform(
-              transform: Matrix4.identity()
-                ..translate(-10.0, 15.0)
-                ..rotateZ(3.13),
-              child: GestureDetector(
-                onTap: widget.onToggle,
-                child: Container(
-                  width: 10,
-                  height: 14.78,
-                  decoration: ShapeDecoration(
-                    color: Colors.white,
-                    shape: StarBorder.polygon(sides: 3),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ]);
@@ -426,7 +359,9 @@ class FacilityStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text('시설 현황/예약'),
       ),
       body: Center(
