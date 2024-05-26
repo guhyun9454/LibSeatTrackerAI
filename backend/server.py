@@ -36,8 +36,6 @@ seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (2
 seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
 # seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390)))) #영상 시연용 한 자리 세팅
 
-
-
 #ai 모델 세팅
 model = YOLO(model_path)
 
@@ -69,6 +67,11 @@ async def get_seats_is_luggage():
 #유저 정보를 받아오는 API
 @app.post("/login")
 async def login(user_id: int):
+    """
+    로그인 과정
+    성공하면 유저 정보를 반환
+    실패시 404 상태코드를 반환
+    """
     user = users_manager.find_user(user_id)
     if user:
         return {"message": "User found", "user": {"user_id": user.user_id, "department": user.department, "name": user.name, "warning_count": user.warning_count}}
@@ -77,6 +80,11 @@ async def login(user_id: int):
 
 @app.get("/usr/seat_id/")
 async def get_seat_id(user_id: int):
+    """
+    유효하지 않은 user_id이면 실패시 404 상태코드를 반환
+    user_id를 가진 유저가 현재 사용중인 좌석을 반환
+    만약 아무 자리도 사용중이지 않으면 -1을 반환
+    """
     user = users_manager.find_user(user_id)
     if user:
         return {"seat_id": user.seat_id}
@@ -85,6 +93,10 @@ async def get_seat_id(user_id: int):
 
 @app.get("/usr/warning_count/")
 async def get_warning_count(user_id: int):
+    """
+    유효하지 않은 user_id이면 실패시 404 상태코드를 반환
+    user_id를 가진 유저의 경고 누적 횟수를 반환
+    """
     user = users_manager.find_user(user_id)
     if user:
         return {"warning_count": user.warning_count}
@@ -94,20 +106,35 @@ async def get_warning_count(user_id: int):
 #예약을 진행하는 API
 @app.put("/reserve/")
 async def reserve_seat(seat_id: int, user_id: int):
+    """
+    user_id를 가진 사용자가 seat_id를 가진 자리를 예약함
+
+    동작:
+    자리 객체의 상태를 입실 대기 상태로 변경함
+    자리 객체에 user_id를 추가함
+    유저 객체의 seat_id를 추가함
+    """
+
+    #유효하지 않은 seat_id
     if seat_id < 0 or seat_id >= len(seats_manager.seats): 
         raise HTTPException(status_code=404, detail="Seat number isn't available")
-    if seats_manager.seats[seat_id].status == SeatStatus.AVAILABLE:
-        seats_manager.seats[seat_id].user_id = user_id
-        seats_manager.seats[seat_id].status = SeatStatus.RESERVED_WAITING_ENTRY
-
-        user = users_manager.find_user(user_id)
-        if user:
-            user.seat_id = seat_id #유저가 사용중인 seat_id를 업데이트
-            return {"message": "Seat reserved successfully"}
-        else:
-            raise HTTPException(status_code=404, detail="User not found")
-    else:
+    
+    #유효하지 않은 user_id
+    user = users_manager.find_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    #자리가 사용 가능 상태가 아닌 경우
+    if seats_manager.seats[seat_id].status != SeatStatus.AVAILABLE:
         raise HTTPException(status_code=404, detail="Seat isn't available")
+    
+    seats_manager.seats[seat_id].user_id = user_id
+    seats_manager.seats[seat_id].status = SeatStatus.RESERVED_WAITING_ENTRY
+    user = users_manager.find_user(user_id)
+    user.seat_id = seat_id #유저가 사용중인 seat_id를 업데이트
+    return {"message": "Seat reserved successfully"}
+
+       
 
 #admin페이지를 위한 APIs
 @app.post("/update")
@@ -119,15 +146,31 @@ async def update_status_with_IMG(file: UploadFile = File(...),
                          conf_threshold: float = 0.6,
                          iou_threshold: float = 0.15,
                          detect_classes: List[int] = Query(...)):
-    
+    """
+    받아온 카메라의 프레임으로부터 ai모델을 사용하여 객체 탐지를 수행하고, 결과를 바탕으로 모든 자리의 상태들을 업데이트함
+
+    file: 카메라의 프레임
+
+    [자리 상태 업데이트 알고리즘 파라미터]
+    MAX_WAITING4ENTRY: 예약 후 입실까지 최대 대기 시간
+    MAX_TEMPORARILY_EMPTY: 가능한 최대 자리비움 시간
+    MAX_CHECKING_OUT: 최대 자리비움 시간이 지나고, 퇴실까지 대기시간
+    MAX_WITHOUT_LUGGAGE: 짐이 없는 경우 자동 퇴실까지 대기 시간
+    iou_threshold: "사람과 짐이 자리와 얼마나 많이 겹쳐야 그 자리에 있다고 판별할지 설정
+
+    [객체 탐지 모델 파라미터]
+    conf_threshold: ai 모델의 확률이 얼마나 높아야 객체로 판별할지 설정
+    detect_classes: 탐지할 객체의 종류들
+    """
+    #file로 받은 img를 ai모델로 처리
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
     resized_image = cv2.resize(img, image_size)
     model_result = model.predict(resized_image, conf=conf_threshold,
                                  verbose=True, classes = detect_classes + [0],
                                  device=device, imgsz=image_size[::-1])
+    
     #모든 자리의 상태를 모델의 결과를 통해 업데이트
     seats_manager.update_all_seats(model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE)
 
