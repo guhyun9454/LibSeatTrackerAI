@@ -9,6 +9,8 @@ import base64
 
 from src.SeatStatus import SeatStatus
 from src.SeatsManager import SeatsManager
+from src.User import User
+from src.UsersManager import UsersManager
 from src.Seat import Seat
 from src.IoU import calculate_iou
 
@@ -21,12 +23,14 @@ model_path = "yolo_weights/yolov8x.pt"
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size)
-# #두 자리 세팅
 seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((80, 150), (280, 150), (280, 330), (80, 330))))
 seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), (560, 330), (360, 330))))
+# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390)))) #영상 시연용 한 자리 세팅
 
-#영상 시연용 한 자리 세팅
-# seats_manager.add_seat(Seat(seat_id = 0, coordinates= ((120, 90), (520, 90), (520, 390), (120, 390))))
+#유저 세팅
+users_manager = UsersManager()
+users_manager.add_user(User(1234,"인공지능학과","홍길동"))
+users_manager.add_user(User(5678,"컴퓨터공학과","고길동"))
 
 #ai 모델 세팅
 model = YOLO(model_path)
@@ -35,16 +39,7 @@ model = YOLO(model_path)
 async def health_check():
     return True
 
-@app.get("/seat/")
-async def get_my_seat(user_id: int):
-    """
-    예약을 위한 api
-    """
-    for seat in seats_manager.seats:
-        if seat.user_id == user_id:
-            return {"my_seat" : seat.seat_id}
-    raise HTTPException(status_code=404, detail="There are no seat you reserved.")
-
+#자리의 상태를 불러오는 APIs
 @app.get("/seats/number")
 async def get_number_of_seats():
     return len(seats_manager.seats)
@@ -65,6 +60,16 @@ async def get_seats_status():
 async def get_seats_status():
     return [seat.is_luggage for seat in seats_manager.seats]
 
+#유저 정보를 받아오는 API
+@app.post("/login")
+async def login(user_id: int):
+    user = users_manager.find_user(user_id)
+    if user:
+        return {"message": "User found", "user": {"user_id": user.user_id, "department": user.department, "name": user.name, "warning_count": user.warning_count}}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+#예약을 진행하는 API
 @app.put("/reserve/")
 async def reserve_seat(seat_id: int, user_id: int):
     if seat_id < 0 or seat_id >= len(seats_manager.seats):
@@ -77,15 +82,6 @@ async def reserve_seat(seat_id: int, user_id: int):
         raise HTTPException(status_code=404, detail="Seat isn't available")
 
 #admin페이지를 위한 APIs
-
-@app.get("/seats/admin")
-async def get_seats_with_id():
-    return [[seat.status, seat.user_id] for seat in seats_manager.seats]
-
-@app.delete("/seats/admin")
-async def delete_all_seat():
-    seats_manager.seats.clear()
-
 @app.post("/detect")
 async def detect_objects(file: UploadFile = File(...), 
                          MAX_WAITING4ENTRY: int = 5, 
