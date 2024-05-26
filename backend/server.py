@@ -14,6 +14,11 @@ from src.UsersManager import UsersManager
 from src.Seat import Seat
 from src.IoU import calculate_iou
 
+def ndarray_to_b64(img):
+    _, encoded_img = cv2.imencode('.jpg', img)
+    base64_img = base64.b64encode(encoded_img).decode('utf-8')
+    return base64_img
+
 app = FastAPI()
 
 #초기 세팅
@@ -69,7 +74,15 @@ async def login(user_id: int):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
-@app.post("/usr/warning_count")
+@app.get("/usr/seat_id/")
+async def get_seat_id(user_id: int):
+    user = users_manager.find_user(user_id)
+    if user:
+        return {"seat_id": user.seat_id}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+@app.get("/usr/warning_count/")
 async def get_warning_count(user_id: int):
     user = users_manager.find_user(user_id)
     if user:
@@ -80,12 +93,18 @@ async def get_warning_count(user_id: int):
 #예약을 진행하는 API
 @app.put("/reserve/")
 async def reserve_seat(seat_id: int, user_id: int):
-    if seat_id < 0 or seat_id >= len(seats_manager.seats):
+    if seat_id < 0 or seat_id >= len(seats_manager.seats): 
         raise HTTPException(status_code=404, detail="Seat number isn't available")
     if seats_manager.seats[seat_id].status == SeatStatus.AVAILABLE:
         seats_manager.seats[seat_id].user_id = user_id
         seats_manager.seats[seat_id].status = SeatStatus.RESERVED_WAITING_ENTRY
-        return {"message": "Seat reserved successfully"}
+
+        user = users_manager.find_user(user_id)
+        if user:
+            user.seat_id = seat_id #유저가 사용중인 seat_id를 업데이트
+            return {"message": "Seat reserved successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
     else:
         raise HTTPException(status_code=404, detail="Seat isn't available")
 
@@ -132,10 +151,8 @@ async def detect_objects(file: UploadFile = File(...),
         color_name = "dark_red" if seat.seat_id == 0 else "dark_blue"
         seat.DetectArea.draw(res, color_name=color_name, alpha=0.5)
 
-
-    _, encoded_img = cv2.imencode('.jpg', res)
-    base64_img = base64.b64encode(encoded_img).decode('utf-8')
-    return JSONResponse(content={"image": base64_img})
+    ret = ndarray_to_b64(res)
+    return JSONResponse(content={"image": ret})
 
 @app.get("/draw")
 async def draw_seats():
@@ -143,6 +160,5 @@ async def draw_seats():
     seats_manager의 자리들을 도식화한 이미지를 반환
     """
     seats_manager.draw_seats()
-    _, encoded_img = cv2.imencode('.jpg', seats_manager.image)
-    base64_img = base64.b64encode(encoded_img).decode('utf-8')
-    return JSONResponse(content={"image": base64_img})
+    ret = ndarray_to_b64(seats_manager.image)
+    return JSONResponse(content={"image": ret})
