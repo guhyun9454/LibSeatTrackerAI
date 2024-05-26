@@ -110,8 +110,8 @@ async def reserve_seat(seat_id: int, user_id: int):
         raise HTTPException(status_code=404, detail="Seat isn't available")
 
 #admin페이지를 위한 APIs
-@app.post("/detect")
-async def detect_objects(file: UploadFile = File(...), 
+@app.post("/update")
+async def update_status_with_IMG(file: UploadFile = File(...), 
                          MAX_WAITING4ENTRY: int = 5, 
                          MAX_TEMPORARILY_EMPTY: int = 5, 
                          MAX_CHECKING_OUT: int = 5,
@@ -119,11 +119,7 @@ async def detect_objects(file: UploadFile = File(...),
                          conf_threshold: float = 0.6,
                          iou_threshold: float = 0.15,
                          detect_classes: List[int] = Query(...)):
-    """
-    입력으로 받은 이미지를 모델을 통해 처리 
-    객체 탐지 결과를 그리고,
-    각 자리의 탐지 구역을 투명하게 표기한 사진을 반환
-    """
+    
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -132,23 +128,31 @@ async def detect_objects(file: UploadFile = File(...),
     model_result = model.predict(resized_image, conf=conf_threshold,
                                  verbose=True, classes = detect_classes + [0],
                                  device=device, imgsz=image_size[::-1])
-    #각 자리의 상태를 모델의 결과를 통해 업데이트
+    #모든 자리의 상태를 모델의 결과를 통해 업데이트
     seats_manager.update_all_seats(model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE)
 
-    # 웹캠 이미지에 DetectArea 그리기
+    #카메라 프레임에 객체탐지 결과를 그리고, 자리 구역을 투명하게 그리고 저장 
     res = model_result[0].plot()
     for seat in seats_manager.seats:
         color_name = "dark_red" if seat.seat_id == 0 else "dark_blue"
         seat.DetectArea.draw(res, color_name=color_name, alpha=0.5)
+    seats_manager.plot = res
 
-    ret = ndarray_to_b64(res)
-    return JSONResponse(content={"image": ret})
+    return {"message": "Update successful"}
 
-@app.get("/draw")
-async def draw_seats():
+@app.get("/diagram")
+async def get_seats_diagram():
     """
     seats_manager의 자리들을 도식화한 이미지를 반환
     """
     seats_manager.draw_seats()
     ret = ndarray_to_b64(seats_manager.image)
+    return JSONResponse(content={"image": ret})
+
+@app.get("/plot")
+async def get_img_plot():
+    """
+    객체 탐지결과가 그려진 카메라 프레임을 반환
+    """
+    ret = ndarray_to_b64(seats_manager.plot)
     return JSONResponse(content={"image": ret})

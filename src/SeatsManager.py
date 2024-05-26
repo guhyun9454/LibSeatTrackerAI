@@ -17,6 +17,7 @@ class SeatsManager:
         self.seats = []
         self.width ,self.height = diagram_sz
         self.background_color = get_color(background_color)
+        self.plot = None
         self.image = np.full((self.height, self.width, 3), self.background_color, dtype=np.uint8)
         self.users_manager = users_manager
     

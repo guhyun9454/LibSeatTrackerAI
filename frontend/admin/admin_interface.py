@@ -10,7 +10,7 @@ def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, check
     try:
         _, encoded_img = cv2.imencode('.jpg', image)
         files = {'file': ('image.jpg', encoded_img.tobytes(), 'image/jpeg')}
-        response = requests.post(f"{BACKEND_URL}/detect", files=files,
+        response = requests.post(f"{BACKEND_URL}/update", files=files,
                                 params={"reserved_waiting_entry": reserved_waiting_entry, 
                                         "temporarily_empty": temporarily_empty, 
                                         "checking_out": checking_out,
@@ -19,15 +19,24 @@ def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, check
                                         "detect_classes": detect_classes})
         response.raise_for_status()
 
-        response_data = response.json()["image"]
-        return base64.b64decode(response_data)
+        return response.json()["message"] == "Update successful"
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
         return None
 
 def get_seat_diagram():
     try:
-        response = requests.get(f"{BACKEND_URL}/draw")
+        response = requests.get(f"{BACKEND_URL}/diagram")
+        response.raise_for_status()
+        response_data = response.json()["image"]
+        return base64.b64decode(response_data)
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
+
+def get_plot_image():
+    try:
+        response = requests.get(f"{BACKEND_URL}/plot")
         response.raise_for_status()
         response_data = response.json()["image"]
         return base64.b64decode(response_data)
@@ -39,6 +48,7 @@ def get_seat_diagram():
 def load_VideoCapture(type):
     print("Loading webcam")
     return cv2.VideoCapture(type)
+
 #초기 세팅
 BACKEND_URL = "http://127.0.0.1:8000"
 detect_items = {
@@ -97,21 +107,24 @@ try:
 
         if success:
             resized_image = cv2.resize(image, (640, 480))
-
-            processed_image = send_image_to_server(resized_image, reserved_waiting_entry, temporarily_empty, checking_out,
-                                                   conf_threshold, iou_threshold, selected_classes)
+            update_success = send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
+                                                  conf_threshold, iou_threshold, selected_classes)
+            plot_image = get_plot_image()
             seat_diagram = get_seat_diagram()
 
+            print(f"    update_success: {update_success}, plot_image: {plot_image is not None}, seat_diagram: {seat_diagram is not None}")
+            
             #디코딩
-            processed_image = np.frombuffer(processed_image, np.uint8)
-            processed_image = cv2.imdecode(processed_image, cv2.IMREAD_COLOR)
-            seat_diagram = np.frombuffer(seat_diagram, np.uint8)
-            seat_diagram = cv2.imdecode(seat_diagram, cv2.IMREAD_COLOR)
+            if update_success and plot_image is not None and seat_diagram is not None:
+                processed_image = np.frombuffer(plot_image, np.uint8)
+                processed_image = cv2.imdecode(processed_image, cv2.IMREAD_COLOR)
+                seat_diagram = np.frombuffer(seat_diagram, np.uint8)
+                seat_diagram = cv2.imdecode(seat_diagram, cv2.IMREAD_COLOR)
 
-            with col1:
-                st_frame_col1.image(processed_image, caption='CCTV', channels="BGR", use_column_width=True)
-            with col2:
-                st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
-                
+                with col1:
+                    st_frame_col1.image(processed_image, caption='CCTV', channels="BGR", use_column_width=True)
+                with col2:
+                    st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
+
 except Exception as e:
     st.sidebar.error("Error loading video: " + str(e))
