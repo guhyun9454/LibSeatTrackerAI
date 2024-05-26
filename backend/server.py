@@ -69,7 +69,7 @@ async def login(user_id: int):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
-@app.post("usr/warning_count")
+@app.post("/usr/warning_count")
 async def get_warning_count(user_id: int):
     user = users_manager.find_user(user_id)
     if user:
