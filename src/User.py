@@ -12,4 +12,9 @@ class User:
     def reset_warnings(self):
         self.warning_count = 0
 
-    
+    def __str__(self):
+        return (f"User ID: {self.user_id}\n"
+                f"Name: {self.name}\n"
+                f"Department: {self.department}\n"
+                f"Warning Count: {self.warning_count}\n"
+                f"Seat ID: {self.seat_id}")

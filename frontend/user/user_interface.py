@@ -22,11 +22,16 @@ FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://127.0.0.1:8000")
 try:
     response = requests.get(f"{FASTAPI_URL}/seats/status")
     response.raise_for_status()  # 에러 발생 시 예외 처리
+    print(response.json())
     st.session_state.seats = response.json()
 
-    data = requests.get(f"{FASTAPI_URL}/seat/?user_id={user_id}").json()
-    if data.get("my_seat") is not None:
-        st.session_state.my_seat = int(data.get('my_seat'))
+    data = requests.get(f"{FASTAPI_URL}/usr/seat_id/?user_id={user_id}")
+    data.raise_for_status()
+    response_json = data.json()
+    print(response_json)
+
+    if response_json.get("seat_id") is not None:
+        st.session_state.my_seat = int(response_json.get('seat_id'))
     else:
         st.session_state.my_seat = -1
 except requests.exceptions.RequestException as e:
