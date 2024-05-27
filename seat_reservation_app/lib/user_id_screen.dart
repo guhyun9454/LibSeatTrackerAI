@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'main_page.dart';
 
 class UserIdScreen extends StatefulWidget {
   @override
@@ -54,11 +55,20 @@ class _UserIdScreenState extends State<UserIdScreen> {
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
-        Navigator.pushReplacementNamed(context, '/main');
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        final user = data['user'];
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainPage(
+              userId: user['user_id'],
+              name: user['name'],
+              department: user['department'],
+              warningCount: user['warning_count'],
+            ),
+          ),
+        );
       } else {
         setState(() {
           errorMessage = '유효한 학번을 입력해주세요.';
@@ -76,7 +86,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Back 버튼 제거
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: Text(
           '학번 입력',
@@ -97,7 +107,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 90), // 전체적으로 아래로 이동
+            SizedBox(height: 90),
             Text(
               '로그인',
               style: TextStyle(
@@ -159,9 +169,6 @@ class _UserIdScreenState extends State<UserIdScreen> {
                           border: InputBorder.none,
                         ),
                         keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
                         onChanged: (value) {
                           if (int.tryParse(value) == null && value.isNotEmpty) {
                             setState(() {
@@ -185,14 +192,6 @@ class _UserIdScreenState extends State<UserIdScreen> {
                 ],
               ),
             ),
-            if (errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Text(
-                  errorMessage!,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
             Container(
               width: double.infinity,
               height: 55,
@@ -210,7 +209,7 @@ class _UserIdScreenState extends State<UserIdScreen> {
                       child: TextField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          labelText: '비밀번호를 입력하세요',
+                          labelText: 'PASSWORD:',
                           labelStyle: TextStyle(color: Colors.black),
                           border: InputBorder.none,
                         ),
@@ -227,6 +226,14 @@ class _UserIdScreenState extends State<UserIdScreen> {
                 ],
               ),
             ),
+            if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text(
+                  errorMessage!,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             SizedBox(height: 20),
             Container(
               width: double.infinity,

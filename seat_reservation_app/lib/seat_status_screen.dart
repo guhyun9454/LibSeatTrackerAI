@@ -1,14 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
+import 'reading_room_status_screen.dart';
+import 'main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'reading_room_status_screen.dart';
-import 'user_id_screen.dart';
+import 'mobile_ticket_page.dart';
 
 class SeatStatusScreen extends StatefulWidget {
   final int userId;
+  final String name;
+  final String department;
+  final int warningCount;
 
-  SeatStatusScreen({required this.userId});
+  SeatStatusScreen({
+    required this.userId,
+    required this.name,
+    required this.department,
+    required this.warningCount,
+  });
 
   @override
   _SeatStatusScreenState createState() => _SeatStatusScreenState();
@@ -18,8 +27,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
   final String apiUrl = 'http://127.0.0.1:8000/seats/status';
   Timer? timer;
   List<int> seatStatuses = [];
-  int? mySeat;
-  ScrollController _scrollController = ScrollController();
+  int? mySeat = -1;
   String? errorMessage;
 
   @override
@@ -29,35 +37,22 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
     fetchUserSeat(widget.userId);
     timer = Timer.periodic(
         const Duration(seconds: 5), (Timer t) => fetchSeatStatuses());
-
-    _scrollController.addListener(() {
-      double pixels = _scrollController.position.pixels;
-      double maxScrollExtent = _scrollController.position.maxScrollExtent;
-      AxisDirection userScrollDirection =
-          _scrollController.position.axisDirection;
-      print('스크롤 위치: $pixels');
-      print('최대 스크롤 범위: $maxScrollExtent');
-      print('사용자 스크롤 방향: $userScrollDirection');
-    });
   }
 
   @override
   void dispose() {
     timer?.cancel();
-    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> fetchSeatStatuses() async {
     try {
       final response = await http.get(Uri.parse(apiUrl));
-      print('좌석 상태 응답 상태 코드: ${response.statusCode}'); // 디버깅용
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {
           setState(() {
             seatStatuses = List<int>.from(data);
-            print('좌석 상태: $seatStatuses'); // 디버깅용
           });
         } else {
           setState(() {
@@ -73,7 +68,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
       setState(() {
         errorMessage = '좌석 정보를 가져오는 중 오류 발생: $e';
       });
-      print('Exception: $e');
     }
   }
 
@@ -81,7 +75,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
     try {
       final response = await http
           .get(Uri.parse('http://127.0.0.1:8000/seat/?user_id=$userId'));
-      print('사용자 좌석 응답 상태 코드: ${response.statusCode}'); // 디버깅용
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is Map && data.containsKey('my_seat')) {
@@ -89,7 +82,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
             mySeat = data['my_seat'] != null
                 ? int.tryParse(data['my_seat'].toString())
                 : -1;
-            print('사용자 좌석: $mySeat'); // 디버깅용
           });
         } else {
           setState(() {
@@ -105,23 +97,39 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
       setState(() {
         errorMessage = '사용자 좌석 정보를 가져오는 중 오류 발생: $e';
       });
-      print('Exception: $e');
     }
   }
 
   Future<void> reserveSeat(int seatId, int userId) async {
+    if (mySeat != null && mySeat != -1) {
+      setState(() {
+        errorMessage = '이미 예약된 좌석이 있습니다.';
+      });
+      return;
+    }
+
     try {
-      final response = await http
-          .put(Uri.parse('$apiUrl/reserve/?seat_id=$seatId&user_id=$userId'));
-      print('좌석 예약 응답 상태 코드: ${response.statusCode}'); // 디버깅용
+      final response = await http.put(Uri.parse(
+          'http://127.0.0.1:8000/reserve/?seat_id=$seatId&user_id=$userId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data is List) {
+        if (data is Map && data['message'] == 'Seat reserved successfully') {
           setState(() {
-            seatStatuses = List<int>.from(data);
-            print('예약 후 좌석 상태: $seatStatuses'); // 디버깅용
+            seatStatuses[seatId] = 3;
+            mySeat = seatId;
           });
-          fetchUserSeat(userId);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MobileTicketPage(
+                seatNumber: seatId,
+                userId: widget.userId,
+                name: widget.name,
+                department: widget.department,
+                warningCount: widget.warningCount,
+              ),
+            ),
+          );
         } else {
           setState(() {
             errorMessage = '좌석 예약 후 데이터 형식 오류 발생';
@@ -136,7 +144,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
       setState(() {
         errorMessage = '좌석 예약 중 오류 발생: $e';
       });
-      print('Exception: $e'); // 디버깅을 위한 예외 메시지 출력
     }
   }
 
@@ -151,19 +158,19 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
   Color getStatusColor(int status) {
     switch (status) {
       case 0:
-        return Colors.green; // 예약 가능
+        return Colors.green;
       case 1:
-        return Colors.blue; // 사용 중
+        return Colors.blue;
       case 2:
-        return Colors.red; // 무단 이용중
+        return Colors.red;
       case 3:
-        return Colors.yellow; // 예약됨 (입실 대기)
+        return Colors.yellow;
       case 4:
-        return Colors.orange; // 퇴실 예정
+        return Colors.orange;
       case 5:
-        return Colors.purple; // 자리 비움
+        return Colors.purple;
       default:
-        return Colors.grey; // 알 수 없음
+        return Colors.grey;
     }
   }
 
@@ -171,47 +178,115 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
     int seatStatus = seatStatuses[index];
     String message;
 
-    switch (seatStatus) {
-      case 0:
-        message = '이 좌석은 예약 가능합니다.';
-        reserveSeat(index, widget.userId);
-        break;
-      case 1:
-        message = '이 좌석은 사용 중입니다.';
-        break;
-      case 2:
-        message = '이 좌석은 무단 이용 중입니다.';
-        break;
-      case 3:
-        message = '이 좌석은 예약되었고 입실을 기다리고 있습니다.';
-        break;
-      case 4:
-        message = '이 좌석은 퇴실 예정입니다.';
-        break;
-      case 5:
-        message = '이 좌석은 일시적으로 비어 있습니다.';
-        break;
-      default:
-        message = '이 좌석은 알 수 없는 상태입니다.';
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('좌석 상태'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text('확인'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+    if (seatStatus == 0) {
+      if (mySeat != -1) {
+        message = '이미 예약한 자리가 존재합니다.';
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('좌석 예약 오류'),
+              content: Text(message),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
-      },
-    );
+        return;
+      }
+      message = '이 좌석은 예약 가능합니다. 예약하시겠습니까?';
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('좌석 예약'),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                child: Text('취소'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  reserveSeat(index, widget.userId);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      switch (seatStatus) {
+        case 1:
+          message = '이 좌석은 사용 중입니다.';
+          break;
+        case 2:
+          message = '이 좌석은 무단 이용 중입니다.';
+          break;
+        case 3:
+          message = '이 좌석은 예약되었고 입실을 기다리고 있습니다.';
+          break;
+        case 4:
+          message = '이 좌석은 퇴실 예정입니다.';
+          break;
+        case 5:
+          message = '이 좌석은 일시적으로 비어 있습니다.';
+          break;
+        default:
+          message = '이 좌석은 알 수 없는 상태입니다.';
+      }
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text(
+              '좌석 상태',
+              style: TextStyle(
+                color: Colors.black, // 텍스트 색상 변경
+                fontSize: 20, // 폰트 크기 조정
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 높이 조정
+              mainAxisAlignment: MainAxisAlignment.center, // 세로 방향 가운데 정렬
+              children: [
+                Text(
+                  message,
+
+                  style:
+                      TextStyle(color: Colors.black, fontSize: 13), // 텍스트 색상 변경
+
+                  textAlign: TextAlign.center, // 텍스트를 가로 방향으로 가운데 정렬
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black, // 버튼 텍스트 색상 변경
+                ),
+                child: Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   Widget buildSeat(int index) {
@@ -260,7 +335,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
 
   Widget buildScrollableSeatGrid() {
     return SingleChildScrollView(
-      controller: _scrollController,
       scrollDirection: Axis.horizontal,
       child: Row(
         children: List.generate(
@@ -275,8 +349,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
                   child: Column(
                     children: [
                       buildSeatColumn((index * 30) + (innerIndex * 6)),
-                      if (innerIndex % 2 == 1)
-                        SizedBox(height: 30), // 두 행마다 공백 추가
+                      if (innerIndex % 2 == 1) SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -292,7 +365,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
 
   Widget buildStatusLegend() {
     return Padding(
-      padding: const EdgeInsets.only(right: 10.0), // 오른쪽 여백 추가
+      padding: const EdgeInsets.only(right: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -339,12 +412,12 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Scaffold 배경색을 흰색으로 설정
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text(
           '좌석 상태 확인',
-          style: TextStyle(color: Colors.black), // 제목 텍스트 색상 변경
+          style: TextStyle(color: Colors.black),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -352,12 +425,15 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    ReadingRoomStatusScreen(userId: widget.userId),
+                builder: (context) => ReadingRoomStatusScreen(
+                    userId: widget.userId,
+                    department: widget.department,
+                    name: widget.name,
+                    warningCount: widget.warningCount),
               ),
             );
           },
-          color: Colors.black, // 아이콘 색상 변경
+          color: Colors.black,
         ),
         actions: [
           IconButton(
@@ -365,10 +441,17 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => UserIdScreen()),
+                MaterialPageRoute(
+                  builder: (context) => MainPage(
+                    userId: widget.userId,
+                    name: widget.name,
+                    department: widget.department,
+                    warningCount: widget.warningCount,
+                  ),
+                ),
               );
             },
-            color: Colors.black, // 아이콘 색상 변경
+            color: Colors.black,
           ),
         ],
       ),
@@ -377,20 +460,20 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            SizedBox(height: 20), // 상단 여백
-            buildStatusLegend(), // 상태 설명을 상단에 추가
-            SizedBox(height: 10), // 상태 설명과 컨테이너 사이의 여백
+            SizedBox(height: 20),
+            buildStatusLegend(),
+            SizedBox(height: 10),
             ClipRect(
               child: Container(
                 width: 450,
-                height: 610, // 높이를 조정하여 overflow 문제 해결
+                height: 610,
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 237, 237, 237), //
+                  color: Color.fromARGB(255, 237, 237, 237),
                 ),
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: buildScrollableSeatGrid(), // 스크롤 가능한 좌석 그리드 표시
+                    child: buildScrollableSeatGrid(),
                   ),
                 ),
               ),
@@ -399,7 +482,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: fetchSeatStatuses, // 새로고침 버튼 클릭 시 즉시 업데이트
+        onPressed: fetchSeatStatuses,
         backgroundColor: Colors.white,
         child: Icon(Icons.refresh, color: Colors.black),
         tooltip: '새로고침',
