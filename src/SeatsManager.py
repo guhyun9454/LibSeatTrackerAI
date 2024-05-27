@@ -72,6 +72,15 @@ class SeatsManager:
                     seat.is_luggage = True
             self.status_update(seat,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY, MAX_CHECKING_OUT, MAX_WITHOUT_LUGGAGE)
 
+    def check_out_by_user_id(self,user_id: int):
+        pass
+
+    def penalize_by_user_id(self,user_id:int):
+        self.users_manager.penalize_user(user_id)
+
+    def report_to_admin(self):
+        pass
+    
     def status_update(self, Seat: Seat, MAX_WAITING4ENTRY = 5 ,MAX_TEMPORARILY_EMPTY = 5, MAX_CHECKING_OUT = 5, MAX_WITHOUT_LUGGAGE = 5):
         """
         분당 반복되야하는 함수. Seat의 status를 업데이트 한다.
@@ -80,8 +89,8 @@ class SeatsManager:
             Seat.waited_time += 1
             if Seat.waited_time > MAX_TEMPORARILY_EMPTY:
                 Seat.waited_time = 0
-                Seat.report_to_admin() # 관리자 연락
-                Seat.penalize_user() # 이용자 경고, 벌점
+                self.report_to_admin() # 관리자 연락
+                self.penalize_by_user_id(Seat.user_id) # 이용자 경고, 벌점
                 Seat.status = SeatStatus.CHECKING_OUT
                 return
         elif Seat.status == SeatStatus.CHECKING_OUT:
@@ -99,7 +108,7 @@ class SeatsManager:
                 Seat.waited_time = 0
                 return
             else:
-                Seat.report_to_admin() # 관리자 연락
+                self.report_to_admin() # 관리자 연락
                 Seat.status = SeatStatus.UNAUTHORIZED_USE
                 return
         else:
@@ -145,7 +154,7 @@ class SeatsManager:
                     else:
                         return
             elif Seat.is_luggage: # 짐이 있는가?
-                Seat.report_to_admin() # 관리자 연락
+                self.report_to_admin() # 관리자 연락
                 Seat.status = SeatStatus.UNAUTHORIZED_USE
                 return
             else:

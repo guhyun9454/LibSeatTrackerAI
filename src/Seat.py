@@ -63,14 +63,7 @@ class Seat:
             return True
         return False
 
-    def check_out(self): # 퇴실 처리 과정
-        self.user_id = -1
-        # 관리자 페이지에 update
-        return
-
-    def report_to_admin(self): # 관리자 연락 처리 과정
-        # 관리자 페이지에 update
-        return
-
-    def penalize_user(self): # 이용자 경고, 벌점 처리 과정
-        return
+    # def check_out(self): # 퇴실 처리 과정
+    #     self.user_id = -1
+    #     # 관리자 페이지에 update
+    #     return
