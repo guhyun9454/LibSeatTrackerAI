@@ -181,8 +181,22 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('좌석 예약 오류'),
-              content: Text(message),
+              backgroundColor: Colors.white, // 배경 흰색으로 설정
+              title: Text(
+                '좌석 예약 오류',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                ),
+              ),
+              content: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.left, // 텍스트 왼쪽 정렬
+              ),
               actions: <Widget>[
                 TextButton(
                   child: Text('확인'),
@@ -196,21 +210,38 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
         );
         return;
       }
-      message = '이 좌석은 예약 가능합니다. 예약하시겠습니까?';
+      message = '이 좌석은 예약 가능합니다.\n예약하시겠습니까?';
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('좌석 예약'),
-            content: Text(message),
+            backgroundColor: Colors.white, // 배경 흰색으로 설정
+            title: Text(
+              '좌석 예약',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+              ),
+            ),
+            content: Text(
+              message,
+              style: TextStyle(color: Colors.black, fontSize: 13),
+              textAlign: TextAlign.left,
+            ),
             actions: <Widget>[
               TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
                 child: Text('취소'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
               TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                ),
                 child: Text('확인'),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -250,26 +281,24 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
             title: Text(
               '좌석 상태',
               style: TextStyle(
-                color: Colors.black, // 텍스트 색상 변경
-                fontSize: 20, // 폰트 크기 조정
+                color: Colors.black,
+                fontSize: 20,
               ),
             ),
             content: Column(
-              mainAxisSize: MainAxisSize.min, // 내용물 크기에 맞게 높이 조정
-              mainAxisAlignment: MainAxisAlignment.center, // 세로 방향 가운데 정렬
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   message,
-                  style:
-                      TextStyle(color: Colors.black, fontSize: 13), // 텍스트 색상 변경
-                  textAlign: TextAlign.center, // 텍스트를 가로 방향으로 가운데 정렬
+                  style: TextStyle(color: Colors.black, fontSize: 13),
                 ),
               ],
             ),
             actions: <Widget>[
               TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.black, // 버튼 텍스트 색상 변경
+                  foregroundColor: Colors.black,
                 ),
                 child: Text('확인'),
                 onPressed: () {
