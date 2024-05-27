@@ -237,7 +237,7 @@ class MainPage extends StatelessWidget {
                         ),
                       ),
                       Positioned(
-                        left: 330.12,
+                        right: 40,
                         top: 720,
                         child: SizedBox(
                           width: 31.38,
@@ -246,7 +246,7 @@ class MainPage extends StatelessWidget {
                             '더보기',
                             style: TextStyle(
                               color: Color(0xFF666666),
-                              fontSize: 12,
+                              fontSize: 11,
                               fontFamily: 'Freesentation',
                               fontWeight: FontWeight.w500,
                               height: 0,
