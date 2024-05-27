@@ -24,4 +24,11 @@ flutter:
     - family: NanumGothic
       fonts:
         - asset: assets/fonts/NanumGothic.ttf
+  assets:
+    - assets/images/학생페이지 뒷배경.png
+    - assets/images/검색 사진.png
+    - assets/images/로고.png
+    - assets/images/도서관이용증.png
+    - assets/images/자리 이용 예약.png
+    - assets/images/웃는사자.png
  
