@@ -8,13 +8,11 @@ class MainPage extends StatelessWidget {
   final int userId;
   final String name;
   final String department;
-  final int warningCount;
 
   MainPage({
     required this.userId,
     required this.name,
     required this.department,
-    required this.warningCount,
   });
 
   @override
@@ -81,7 +79,6 @@ class MainPage extends StatelessWidget {
                                   userId: userId,
                                   department: department,
                                   name: name,
-                                  warningCount: warningCount,
                                 ),
                               ),
                             );
@@ -137,11 +134,9 @@ class MainPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => MobileTicketPage(
-                                  seatNumber: 0,
                                   userId: userId,
                                   name: name,
                                   department: department,
-                                  warningCount: warningCount,
                                 ),
                               ),
                             );
@@ -165,7 +160,6 @@ class MainPage extends StatelessWidget {
                                   userId: userId,
                                   name: name,
                                   department: department,
-                                  warningCount: warningCount,
                                 ),
                               ),
                             );
