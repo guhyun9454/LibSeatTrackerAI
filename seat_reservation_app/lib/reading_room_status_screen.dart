@@ -9,13 +9,11 @@ class ReadingRoomStatusScreen extends StatefulWidget {
   final int userId;
   final String name;
   final String department;
-  final int warningCount;
 
   ReadingRoomStatusScreen({
     required this.userId,
     required this.name,
     required this.department,
-    required this.warningCount,
   });
 
   @override
@@ -150,11 +148,9 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => SeatStatusScreen(
-                            userId: widget.userId,
-                            name: widget.name,
-                            department: widget.department,
-                            warningCount: widget.warningCount,
-                          ),
+                              userId: widget.userId,
+                              name: widget.name,
+                              department: widget.department),
                         ),
                       );
                     },
@@ -249,11 +245,9 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => MainPage(
-                  userId: widget.userId,
-                  name: widget.name,
-                  department: widget.department,
-                  warningCount: widget.warningCount,
-                ),
+                    userId: widget.userId,
+                    name: widget.name,
+                    department: widget.department),
               ),
             );
           },
