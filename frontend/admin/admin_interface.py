@@ -4,6 +4,7 @@ import numpy as np
 import requests
 import base64
 import time
+import pandas as pd
 
 def send_image_to_server(image, reserved_waiting_entry, temporarily_empty, checking_out,
                          conf_threshold, iou_threshold, detect_classes):
@@ -43,6 +44,15 @@ def get_plot_image():
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
         return None
+    
+def get_all_users():
+    try:
+        response = requests.get(f"{BACKEND_URL}/users")
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return []
 
 @st.cache_resource
 def load_VideoCapture(type):
@@ -77,6 +87,7 @@ with col1:
     st_frame_col1 = st.empty()
 with col2:
     st_frame_col2 = st.empty()
+user_frame = st.empty()
 reserved_waiting_entry = st.sidebar.number_input("MAX_WAITING4ENTRY (minutes)", min_value=1, value=5)
 st.sidebar.write("예약 후 입실까지 최대 대기 시간")
 temporarily_empty = st.sidebar.number_input("MAX_TEMPORARILY_EMPTY  (minutes)", min_value=1, value=5)
@@ -126,5 +137,10 @@ try:
                 with col2:
                     st_frame_col2.image(seat_diagram, caption='Diagram', channels="BGR", use_column_width=True)
 
+            users_data = get_all_users()
+            if users_data:
+                users_df = pd.DataFrame(users_data)
+                user_frame.table(users_df)
+
 except Exception as e:
-    st.sidebar.error("Error loading video: " + str(e))
+    st.sidebar.error("Error: " + str(e))

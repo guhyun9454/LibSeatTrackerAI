@@ -28,7 +28,8 @@ model_path = "yolo_weights/yolov8x.pt"
 #유저 세팅
 users_manager = UsersManager()
 users_manager.add_user(User(1234,"인공지능학과","홍길동"))
-users_manager.add_user(User(5678,"컴퓨터공학과","고길동"))
+users_manager.add_user(User(5678,"컴퓨터공학과","철수"))
+users_manager.add_user(User(1111,"소트프웨어융합학과","영희"))
 
 #자리 세팅 
 seats_manager = SeatsManager(image_size,users_manager)
@@ -137,6 +138,14 @@ async def reserve_seat(seat_id: int, user_id: int):
        
 
 #admin페이지를 위한 APIs
+@app.get("/users")
+async def get_all_users():
+    """
+    모든 사용자 정보를 반환
+    """
+    users = [{"user_id": user.user_id, "department": user.department, "name": user.name, "warning_count": user.warning_count, "seat_id": user.seat_id} for user in users_manager.database]
+    return JSONResponse(content=users)
+
 @app.post("/update")
 async def update_status_with_IMG(file: UploadFile = File(...), 
                          MAX_WAITING4ENTRY: int = 5, 
