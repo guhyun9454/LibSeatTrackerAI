@@ -2,13 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'user_id_screen.dart';
-import 'seat_status_screen.dart'; // Add this import
+import 'seat_status_screen.dart';
+import 'main_page.dart';
 
 class ReadingRoomStatusScreen extends StatefulWidget {
   final int userId;
+  final String name;
+  final String department;
+  final int warningCount;
 
-  ReadingRoomStatusScreen({required this.userId});
+  ReadingRoomStatusScreen({
+    required this.userId,
+    required this.name,
+    required this.department,
+    required this.warningCount,
+  });
 
   @override
   _ReadingRoomStatusScreenState createState() =>
@@ -23,7 +31,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
   int totalSeats = 0;
   String? errorMessage;
   String selectedCampus = '국제캠퍼스';
-  bool isExpanded = true; // State to control the expansion of the list
+  bool isExpanded = true;
 
   @override
   void initState() {
@@ -89,7 +97,6 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
   }
 
   int getOccupiedSeatsCount() {
-    // Exclude statuses that are green (0) or grey (6)
     return seatStatuses.where((status) => status != 0 && status != 6).length;
   }
 
@@ -106,24 +113,28 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
 
   Widget buildReadingRoomContainer(String title, int occupiedSeats,
       int totalSeats, int availableSeats, double progress) {
-    bool isFavorite = false; // To manage the favorite state
+    bool isFavorite = false;
 
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         return Container(
-          width: 410, // Increase width by 50
-          height: 220, // Set container height to 200
+          width: 410,
+          height: 220,
           padding: const EdgeInsets.all(16.0),
-          margin: const EdgeInsets.only(
-              bottom: 16.0), // Add bottom margin for spacing
+          margin: const EdgeInsets.only(bottom: 16.0),
           decoration: BoxDecoration(
-            color: Colors.white, // Background color set to white
-            border: Border.all(color: Colors.grey), // Add grey border
+            color: Colors.white,
             borderRadius: BorderRadius.circular(5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // Center content vertically
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -138,25 +149,28 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              SeatStatusScreen(userId: widget.userId),
+                          builder: (context) => SeatStatusScreen(
+                            userId: widget.userId,
+                            name: widget.name,
+                            department: widget.department,
+                            warningCount: widget.warningCount,
+                          ),
                         ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 15), // Adjust button padding
-                      backgroundColor:
-                          Color(0xFF111E63), // Background color set to navy
-                      foregroundColor: Colors.white, // Text color set to white
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                      backgroundColor: Color(0xFF111E63),
+                      foregroundColor: Colors.white,
                     ),
                     child: Text(
                       '자리 배정',
-                      style: TextStyle(fontSize: 12), // Adjust font size
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                   Text(
-                    '00:00 ~ 24:00', // Add time text
+                    '00:00 ~ 24:00',
                     style: TextStyle(fontSize: 12),
                   ),
                   IconButton(
@@ -179,7 +193,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
               ),
               SizedBox(height: 10),
               Container(
-                width: 400, // Increase width by 50
+                width: 400,
                 height: 20,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(5),
@@ -221,22 +235,29 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
     double progress = (totalSeats > 0) ? (occupiedSeats / totalSeats) : 0;
 
     return Scaffold(
-      backgroundColor: Colors.white, // Scaffold background color set to white
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text(
           '좌석 및 시설 예약',
-          style: TextStyle(color: Colors.black), // Title text color changed
+          style: TextStyle(color: Colors.black),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => UserIdScreen()),
+              MaterialPageRoute(
+                builder: (context) => MainPage(
+                  userId: widget.userId,
+                  name: widget.name,
+                  department: widget.department,
+                  warningCount: widget.warningCount,
+                ),
+              ),
             );
           },
-          color: Colors.black, // Icon color changed
+          color: Colors.black,
         ),
       ),
       body: SingleChildScrollView(
@@ -250,8 +271,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
                   });
                 },
               ),
-              SizedBox(
-                  height: 20), // Add space between the header and containers
+              SizedBox(height: 20),
               if (isExpanded) ...[
                 buildReadingRoomContainer('1F 제 1열람실', occupiedSeats,
                     totalSeats, availableSeats, progress),
@@ -267,7 +287,7 @@ class _ReadingRoomStatusScreenState extends State<ReadingRoomStatusScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: fetchSeatStatuses, // 새로고침 버튼 클릭 시 즉시 업데이트
+        onPressed: fetchSeatStatuses,
         backgroundColor: Colors.white,
         child: Icon(Icons.refresh, color: Colors.black),
         tooltip: '새로고침',
