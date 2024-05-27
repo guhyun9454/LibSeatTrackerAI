@@ -1,19 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class MobileTicketPage extends StatelessWidget {
-  final int seatNumber;
+class MobileTicketPage extends StatefulWidget {
   final int userId;
   final String name;
   final String department;
-  final int warningCount;
 
   MobileTicketPage({
-    required this.seatNumber,
     required this.userId,
     required this.name,
     required this.department,
-    required this.warningCount,
   });
+
+  @override
+  _MobileTicketPageState createState() => _MobileTicketPageState();
+}
+
+class _MobileTicketPageState extends State<MobileTicketPage> {
+  int seatNumber = 0;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSeatNumber();
+  }
+
+  Future<void> fetchSeatNumber() async {
+    try {
+      final response = await http.get(Uri.parse('http://127.0.0.1:8000/users'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final user = data.firstWhere((user) => user['user_id'] == widget.userId,
+            orElse: () => null);
+
+        if (user != null) {
+          setState(() {
+            seatNumber = user['seat_id'] ?? 0;
+          });
+        } else {
+          setState(() {
+            errorMessage = '사용자를 찾을 수 없습니다.';
+          });
+        }
+      } else {
+        setState(() {
+          errorMessage = '좌석 정보를 가져오는 중 오류 발생: ${response.reasonPhrase}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = '좌석 정보를 가져오는 중 오류 발생: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
