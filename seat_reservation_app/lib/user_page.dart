@@ -1,18 +1,55 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'user_id_screen.dart';
 
-class UserPage extends StatelessWidget {
+class UserPage extends StatefulWidget {
   final int userId;
   final String name;
   final String department;
-  final int warningCount;
 
   UserPage({
     required this.userId,
     required this.name,
     required this.department,
-    required this.warningCount,
   });
+
+  @override
+  _UserPageState createState() => _UserPageState();
+}
+
+class _UserPageState extends State<UserPage> {
+  final String getWarningCountUrl =
+      'http://127.0.0.1:8000/usr/warning_count/?user_id=';
+  int warningCount = 0;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWarningCount(widget.userId);
+  }
+
+  Future<void> fetchWarningCount(int userId) async {
+    try {
+      final response = await http.get(Uri.parse('$getWarningCountUrl$userId'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          warningCount = data['warning_count'] ?? 0;
+        });
+      } else {
+        setState(() {
+          errorMessage = '경고 횟수를 가져오는 중 오류 발생: ${response.reasonPhrase}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = '경고 횟수를 가져오는 중 오류 발생: $e';
+        warningCount = 0;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +59,7 @@ class UserPage extends StatelessWidget {
         title: Text('유저 페이지'),
       ),
       body: Container(
-        color: Colors.white, // 배경색 흰색으로 설정
+        color: Colors.white,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -41,7 +78,7 @@ class UserPage extends StatelessWidget {
                           width: 472,
                           height: 208,
                           child: Image.asset(
-                            'assets/images/학생페이지 뒷배경.png', // 이미지 파일 경로
+                            'assets/images/학생페이지 뒷배경.png',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -132,7 +169,7 @@ class UserPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              name,
+                              widget.name,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Color(0xFF525252),
@@ -143,7 +180,7 @@ class UserPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              userId.toString(),
+                              widget.userId.toString(),
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Color(0xFF525252),
@@ -154,7 +191,7 @@ class UserPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              department,
+                              widget.department,
                               textAlign: TextAlign.right,
                               style: TextStyle(
                                 color: Color(0xFF525252),
@@ -181,7 +218,7 @@ class UserPage extends StatelessWidget {
                       // 로그아웃 버튼 추가
                       Positioned(
                         right: 30,
-                        bottom: 50, // 로그아웃 버튼을 조금 위로 이동
+                        bottom: 50,
                         child: GestureDetector(
                           onTap: () {
                             Navigator.pushReplacement(
