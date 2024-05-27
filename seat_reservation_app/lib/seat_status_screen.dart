@@ -10,14 +10,9 @@ class SeatStatusScreen extends StatefulWidget {
   final int userId;
   final String name;
   final String department;
-  final int warningCount;
 
-  SeatStatusScreen({
-    required this.userId,
-    required this.name,
-    required this.department,
-    required this.warningCount,
-  });
+  SeatStatusScreen(
+      {required this.userId, required this.name, required this.department});
 
   @override
   _SeatStatusScreenState createState() => _SeatStatusScreenState();
@@ -25,9 +20,11 @@ class SeatStatusScreen extends StatefulWidget {
 
 class _SeatStatusScreenState extends State<SeatStatusScreen> {
   final String apiUrl = 'http://127.0.0.1:8000/seats/status';
+  final String userSeatUrl = 'http://127.0.0.1:8000/usr/seat_id?user_id=';
+
   Timer? timer;
   List<int> seatStatuses = [];
-  int? mySeat = -1;
+  int mySeat = -1;
   String? errorMessage;
 
   @override
@@ -54,6 +51,8 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
           setState(() {
             seatStatuses = List<int>.from(data);
           });
+          // 사용자의 좌석 상태를 업데이트
+          fetchUserSeat(widget.userId);
         } else {
           setState(() {
             errorMessage = '좌석 정보를 가져오는 중 데이터 형식 오류 발생';
@@ -73,15 +72,12 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
 
   Future<void> fetchUserSeat(int userId) async {
     try {
-      final response = await http
-          .get(Uri.parse('http://127.0.0.1:8000/seat/?user_id=$userId'));
+      final response = await http.get(Uri.parse('$userSeatUrl$userId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data is Map && data.containsKey('my_seat')) {
+        if (data is Map && data.containsKey('seat_id')) {
           setState(() {
-            mySeat = data['my_seat'] != null
-                ? int.tryParse(data['my_seat'].toString())
-                : -1;
+            mySeat = data['seat_id'] ?? -1;
           });
         } else {
           setState(() {
@@ -101,7 +97,7 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
   }
 
   Future<void> reserveSeat(int seatId, int userId) async {
-    if (mySeat != null && mySeat != -1) {
+    if (mySeat != -1) {
       setState(() {
         errorMessage = '이미 예약된 좌석이 있습니다.';
       });
@@ -118,15 +114,15 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
             seatStatuses[seatId] = 3;
             mySeat = seatId;
           });
+          // 좌석 상태를 다시 가져옴
+          await fetchSeatStatuses();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => MobileTicketPage(
-                seatNumber: seatId,
                 userId: widget.userId,
                 name: widget.name,
                 department: widget.department,
-                warningCount: widget.warningCount,
               ),
             ),
           );
@@ -264,10 +260,8 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
               children: [
                 Text(
                   message,
-
                   style:
                       TextStyle(color: Colors.black, fontSize: 13), // 텍스트 색상 변경
-
                   textAlign: TextAlign.center, // 텍스트를 가로 방향으로 가운데 정렬
                 ),
               ],
@@ -426,10 +420,10 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => ReadingRoomStatusScreen(
-                    userId: widget.userId,
-                    department: widget.department,
-                    name: widget.name,
-                    warningCount: widget.warningCount),
+                  userId: widget.userId,
+                  department: widget.department,
+                  name: widget.name,
+                ),
               ),
             );
           },
@@ -446,7 +440,6 @@ class _SeatStatusScreenState extends State<SeatStatusScreen> {
                     userId: widget.userId,
                     name: widget.name,
                     department: widget.department,
-                    warningCount: widget.warningCount,
                   ),
                 ),
               );
