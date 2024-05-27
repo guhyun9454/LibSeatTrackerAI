@@ -65,7 +65,6 @@ class _UserIdScreenState extends State<UserIdScreen> {
               userId: user['user_id'],
               name: user['name'],
               department: user['department'],
-              warningCount: user['warning_count'],
             ),
           ),
         );
