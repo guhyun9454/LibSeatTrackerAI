@@ -1,5 +1,8 @@
 # LibSeatTrackerAI
 
+## Preview
+![Example Image](img/preview.png)
+
 ## About Project
 ![Example Image](img/1.jpeg)
 ![Example Image](img/2.jpeg)
