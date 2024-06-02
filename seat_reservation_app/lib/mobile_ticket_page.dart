@@ -27,6 +27,12 @@ class _MobileTicketPageState extends State<MobileTicketPage> {
     fetchSeatNumber();
   }
 
+  @override
+  void dispose() {
+    // 여기에 비동기 작업이나 타이머를 정리하는 코드를 추가합니다.
+    super.dispose();
+  }
+
   Future<void> fetchSeatNumber() async {
     try {
       final response = await http.get(Uri.parse('http://127.0.0.1:8000/users'));
@@ -37,54 +43,66 @@ class _MobileTicketPageState extends State<MobileTicketPage> {
             orElse: () => null);
 
         if (user != null) {
-          setState(() {
-            seatNumber = user['seat_id'] ?? 0;
-          });
+          if (mounted) {
+            setState(() {
+              seatNumber = user['seat_id'] ?? 0;
+            });
+          }
         } else {
-          setState(() {
-            errorMessage = '사용자를 찾을 수 없습니다.';
-          });
+          if (mounted) {
+            setState(() {
+              errorMessage = '사용자를 찾을 수 없습니다.';
+            });
+          }
         }
       } else {
-        setState(() {
-          errorMessage = '좌석 정보를 가져오는 중 오류 발생: ${response.reasonPhrase}';
-        });
+        if (mounted) {
+          setState(() {
+            errorMessage = '좌석 정보를 가져오는 중 오류 발생: ${response.reasonPhrase}';
+          });
+        }
       }
     } catch (e) {
-      setState(() {
-        errorMessage = '좌석 정보를 가져오는 중 오류 발생: $e';
-      });
+      if (mounted) {
+        setState(() {
+          errorMessage = '좌석 정보를 가져오는 중 오류 발생: $e';
+        });
+      }
     }
   }
 
   Future<void> cancelSeat() async {
     try {
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/cancel/'),
-        body: jsonEncode({'user_id': widget.userId}),
-        headers: {'Content-Type': 'application/json'},
+      final response = await http.get(
+        Uri.parse('http://127.0.0.1:8000/cancel/?user_id=${widget.userId}'),
       );
 
       if (response.statusCode == 200) {
-        setState(() {
-          seatNumber = -1;
-        });
+        if (mounted) {
+          setState(() {
+            seatNumber = -1;
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Seat canceled successfully')),
         );
       } else {
         final responseData = json.decode(response.body);
-        setState(() {
-          errorMessage = 'Error: ${responseData['detail']}';
-        });
+        if (mounted) {
+          setState(() {
+            errorMessage = 'Error: ${responseData['detail']}';
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${responseData['detail']}')),
         );
       }
     } catch (e) {
-      setState(() {
-        errorMessage = 'Error: $e';
-      });
+      if (mounted) {
+        setState(() {
+          errorMessage = 'Error: $e';
+        });
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
@@ -266,7 +284,7 @@ class _MobileTicketPageState extends State<MobileTicketPage> {
                     decoration: BoxDecoration(color: Color(0xFFA40F16)),
                     child: Center(
                       child: Text(
-                        '예약 취소',
+                        '예약 취소 / 퇴실',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
