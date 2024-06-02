@@ -57,6 +57,40 @@ class _MobileTicketPageState extends State<MobileTicketPage> {
     }
   }
 
+  Future<void> cancelSeat() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/cancel/'),
+        body: jsonEncode({'user_id': widget.userId}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          seatNumber = -1;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seat canceled successfully')),
+        );
+      } else {
+        final responseData = json.decode(response.body);
+        setState(() {
+          errorMessage = 'Error: ${responseData['detail']}';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${responseData['detail']}')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: $e';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,100 +153,127 @@ class _MobileTicketPageState extends State<MobileTicketPage> {
                 ),
               ),
               Positioned(
-                left: 60,
-                top: 190,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 75,
-                      height: 45,
-                      child: Text(
-                        '좌석',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF525252),
-                          fontSize: 35,
-                          fontFamily: 'Freesentation',
-                          fontWeight: FontWeight.w400,
-                          height: 1,
-                        ),
-                      ),
+                right: 19,
+                top: 101,
+                child: IconButton(
+                  icon: Icon(Icons.refresh, color: Colors.white),
+                  onPressed: () {
+                    fetchSeatNumber();
+                  },
+                ),
+              ),
+              if (seatNumber == -1)
+                Center(
+                  child: Text(
+                    '예약한 자리가 없습니다',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 24,
                     ),
-                    SizedBox(height: 5),
-                    Container(
-                      width: 75,
-                      height: 30,
-                      child: Center(
+                  ),
+                )
+              else ...[
+                Positioned(
+                  left: 60,
+                  top: 190,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: 75,
+                        height: 45,
                         child: Text(
-                          '$seatNumber번',
+                          '좌석',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF4A4A4A),
-                            fontSize: 25,
+                            color: Color(0xFF525252),
+                            fontSize: 35,
                             fontFamily: 'Freesentation',
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w400,
                             height: 1,
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Container(
-                      width: 300,
-                      height: 1,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Colors.grey),
+                      SizedBox(height: 5),
+                      Container(
+                        width: 75,
+                        height: 30,
+                        child: Center(
+                          child: Text(
+                            '$seatNumber번',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFF4A4A4A),
+                              fontSize: 25,
+                              fontFamily: 'Freesentation',
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                            ),
+                          ),
                         ),
                       ),
+                      SizedBox(height: 10),
+                      Container(
+                        width: 300,
+                        height: 1,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 61,
+                  top: 304,
+                  child: Container(
+                    width: 304,
+                    height: 304,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x3F000000),
+                          blurRadius: 4,
+                          offset: Offset(0, 4),
+                          spreadRadius: 0,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              Positioned(
-                left: 61,
-                top: 304,
-                child: Container(
-                  width: 304,
-                  height: 304,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x3F000000),
-                        blurRadius: 4,
-                        offset: Offset(0, 4),
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.asset('assets/images/QR.png',
-                            fit: BoxFit.cover),
-                      ),
-                    ],
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Image.asset('assets/images/QR.png',
+                              fit: BoxFit.cover),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
               Positioned(
                 left: 0,
                 bottom: 0,
-                child: Container(
-                  width: 430,
-                  height: 60,
-                  decoration: BoxDecoration(color: Color(0xFFA40F16)),
-                  child: Center(
-                    child: Text(
-                      '예약 취소',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontFamily: 'Freesentation',
-                        fontWeight: FontWeight.w400,
+                child: GestureDetector(
+                  onTap: () {
+                    cancelSeat();
+                  },
+                  child: Container(
+                    width: 430,
+                    height: 60,
+                    decoration: BoxDecoration(color: Color(0xFFA40F16)),
+                    child: Center(
+                      child: Text(
+                        '예약 취소',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontFamily: 'Freesentation',
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ),
