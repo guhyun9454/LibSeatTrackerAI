@@ -63,6 +63,13 @@ class Seat:
             return True
         return False
 
+    def clear(self):
+        self.status = SeatStatus.AVAILABLE
+        self.is_person = False
+        self.is_luggage = False
+        self.waited_time = 0
+        self.luggage_waited_time = 0
+        
     # def check_out(self): # 퇴실 처리 과정
     #     self.user_id = -1
     #     # 관리자 페이지에 update

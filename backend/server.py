@@ -135,6 +135,20 @@ async def reserve_seat(seat_id: int, user_id: int):
     user.seat_id = seat_id #유저가 사용중인 seat_id를 업데이트
     return {"message": "Seat reserved successfully"}
 
+@app.get("/cancel/")
+async def cancel_seat(user_id: int):
+    #유효하지 않은 user_id
+    user = users_manager.find_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    else:
+        if user.seat_id == -1:
+            "예약된 좌석이 없는 경우"
+            raise HTTPException(status_code=404, detail="No reserved Seat")
+        else:
+            seats_manager.seats[user.seat_id].clear()
+            user.seat_cancel()
+            return {"message": "Seat canceled successfully"}
        
 
 #admin페이지를 위한 APIs

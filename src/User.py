@@ -18,3 +18,6 @@ class User:
                 f"Department: {self.department}\n"
                 f"Warning Count: {self.warning_count}\n"
                 f"Seat ID: {self.seat_id}")
+    
+    def seat_cancel(self):
+        self.seat_id = -1
