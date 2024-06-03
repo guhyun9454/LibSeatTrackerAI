@@ -1,0 +1,69 @@
+{
+    "timestamp": 1717424719.8389337,
+    "devices": [
+        {
+            "id": "ebc25d23d4956376f95utg",
+            "ip": "192.168.35.38",
+            "uuid": "8c123d571e235cbe",
+            "active": 2,
+            "encrypt": true,
+            "productKey": "key8u54q9dtru5jw",
+            "token": true,
+            "wf_cfg": true,
+            "clientLink": 3,
+            "name": "Smart Bulb 2",
+            "key": "n;W2UP6g{nTVmM{U",
+            "mac": "b8:06:0d:86:30:62",
+            "ability": 0,
+            "dev_type": "default",
+            "err": "",
+            "type": "default",
+            "dps": {
+                "dps": {
+                    "20": true,
+                    "21": "white",
+                    "22": 10,
+                    "23": 251,
+                    "24": "000003e803e8",
+                    "25": "000e0d0000000000000000c80000",
+                    "26": 0,
+                    "34": false
+                }
+            },
+            "origin": "broadcast",
+            "ver": "3.5"
+        },
+        {
+            "id": "ebe2b73a786836f725gasp",
+            "ip": "192.168.35.177",
+            "uuid": "a9eaa2c4b80b7b00",
+            "active": 2,
+            "encrypt": true,
+            "productKey": "key8u54q9dtru5jw",
+            "token": true,
+            "wf_cfg": true,
+            "clientLink": 3,
+            "name": "Smart Bulb 1",
+            "key": "hI=Ys9drHUIlR2|h",
+            "mac": "b8:06:0d:86:d6:08",
+            "ability": 0,
+            "dev_type": "default",
+            "err": "",
+            "type": "default",
+            "dps": {
+                "dps": {
+                    "20": true,
+                    "21": "white",
+                    "22": 10,
+                    "23": 334,
+                    "24": "004b03e803e8",
+                    "25": "000e0d0000000000000000c80000",
+                    "26": 0,
+                    "34": false
+                }
+            },
+            "origin": "broadcast",
+            "ver": "3.5"
+        }
+    ]
+}
