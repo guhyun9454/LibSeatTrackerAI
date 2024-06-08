@@ -13,6 +13,9 @@ from src.User import User
 from src.UsersManager import UsersManager
 from src.Seat import Seat
 
+from contextlib import asynccontextmanager
+import asyncio
+
 def ndarray_to_b64(img):
     _, encoded_img = cv2.imencode('.jpg', img)
     base64_img = base64.b64encode(encoded_img).decode('utf-8')
@@ -39,6 +42,19 @@ seats_manager.add_seat(Seat(seat_id = 1, coordinates = ((360, 150), (560, 150), 
 
 #ai 모델 세팅
 model = YOLO(model_path)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 애플리케이션 시작 시 실행할 코드
+    await seats_manager.initialize_bulbs()
+
+    yield
+
+    # 애플리케이션 종료 시 실행할 코드
+    print("Application is shutting down...")
+    await seats_manager.disable_bulbs()
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def health_check():
@@ -131,6 +147,7 @@ async def reserve_seat(seat_id: int, user_id: int):
     
     seats_manager.seats[seat_id].user_id = user_id
     seats_manager.seats[seat_id].status = SeatStatus.RESERVED_WAITING_ENTRY
+    await seats_manager.bulb_manager.change_bulb_state(seat_id, SeatStatus.RESERVED_WAITING_ENTRY)
     user = users_manager.find_user(user_id)
     user.seat_id = seat_id #유저가 사용중인 seat_id를 업데이트
     return {"message": "Seat reserved successfully"}
@@ -147,6 +164,7 @@ async def cancel_seat(user_id: int):
             raise HTTPException(status_code=404, detail="No reserved Seat")
         else:
             seats_manager.seats[user.seat_id].clear()
+            await seats_manager.bulb_manager.change_bulb_state(user.seat_id, SeatStatus.AVAILABLE)
             user.seat_cancel()
             return {"message": "Seat canceled successfully"}
        
@@ -195,7 +213,7 @@ async def update_status_with_IMG(file: UploadFile = File(...),
                                  device=device, imgsz=image_size[::-1])
     
     #모든 자리의 상태를 모델의 결과를 통해 업데이트
-    seats_manager.update_all_seats(model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE)
+    await seats_manager.update_all_seats(model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE)
 
     #카메라 프레임에 객체탐지 결과를 그리고, 자리 구역을 투명하게 그리고 저장 
     res = model_result[0].plot()

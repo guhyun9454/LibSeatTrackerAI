@@ -6,6 +6,9 @@ from .SeatStatus import SeatStatus
 from .Colors import get_color, state_colors
 from .IoU import calculate_iou
 from .UsersManager import UsersManager
+from .BulbManager import BulbManager
+
+from PyP100 import PyL530
 
 class SeatsManager:
     """
@@ -20,6 +23,13 @@ class SeatsManager:
         self.plot = None
         self.image = np.full((self.height, self.width, 3), self.background_color, dtype=np.uint8)
         self.users_manager = users_manager
+        self.bulb_manager = BulbManager()
+
+    async def initialize_bulbs(self):
+        await self.bulb_manager.discover_bulbs()
+
+    async def disable_bulbs(self):
+        await self.bulb_manager.disable_bulbs()
     
     def add_seat(self, seat: Seat):
         """
@@ -59,8 +69,9 @@ class SeatsManager:
             cv2.putText(self.image, user_text, (cx - 100, cy + 85), cv2.FONT_HERSHEY_SIMPLEX, 0.8, get_color("black"), 2)
 
 
-    def update_all_seats(self,model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE):
-        for seat in self.seats :
+    async def update_all_seats(self,model_result,iou_threshold,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY,MAX_CHECKING_OUT,MAX_WITHOUT_LUGGAGE):
+        for seat in self.seats:
+            old_status = seat.status  # 현재 상태 저장
             seat.is_person = False
             seat.is_luggage = False
             for result in model_result[0].boxes:
@@ -71,6 +82,10 @@ class SeatsManager:
                 elif cls != 0 and iou > iou_threshold:  # 짐
                     seat.is_luggage = True
             self.status_update(seat,MAX_WAITING4ENTRY,MAX_TEMPORARILY_EMPTY, MAX_CHECKING_OUT, MAX_WITHOUT_LUGGAGE)
+
+            # 상태가 변경되었는지 확인
+            if seat.status != old_status:
+                await self.bulb_manager.change_bulb_state(seat.seat_id, seat.status)
 
     def check_out_by_user_id(self,user_id: int):
         pass
