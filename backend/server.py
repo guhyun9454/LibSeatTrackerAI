@@ -46,13 +46,20 @@ model = YOLO(model_path)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 애플리케이션 시작 시 실행할 코드
-    await seats_manager.initialize_bulbs()
+    print("initializing bulbs...")
+    try:
+        await seats_manager.initialize_bulbs()
+        print("initialization succeeds!")
+    except Exception as e:
+        print(f"Bulb initialization failed: {e}. Running without bulbs.")
+        seats_manager.bulb_manager = None
 
     yield
 
     # 애플리케이션 종료 시 실행할 코드
     print("Application is shutting down...")
-    await seats_manager.disable_bulbs()
+    if seats_manager.bulb_manager:
+        await seats_manager.disable_bulbs()
 
 app = FastAPI(lifespan=lifespan)
 
