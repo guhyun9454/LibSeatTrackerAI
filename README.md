@@ -11,6 +11,13 @@
 ![Example Image](img/5.jpeg)
 ![Example Image](img/6.jpeg)
 ![Example Image](img/7.jpeg)
+![Example Image](img/8.jpeg)
+![Example Image](img/9.jpeg)
+![Example Image](img/10.jpeg)
+![Example Image](img/11.jpeg)
+![Example Image](img/12.jpeg)
+![Example Image](img/13.jpeg)
+![Example Image](img/14.jpeg)
 
 ## Getting Started
 
@@ -26,7 +33,7 @@ Follow these steps to run the project locally:
    streamlit run frontend/admin/admin_interface.py --server.port 8501
    ```
 
-3. **Start the user frontend:**
+3. **Start the user frontend(demo):**
    ```bash
    streamlit run frontend/user/user_interface.py --server.port 8502
    ```
@@ -37,10 +44,3 @@ Follow these steps to run the project locally:
    open -a Simulator 
    flutter run 
    ```
-
-## Using docker
-   
-This code runs a user interface and a backend server in docker.
-```bash
-docker-compose up -d --build
-```
